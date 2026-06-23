@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<style>
+    /* ================= GLOBAL & CSS ================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans Lao', 'Montserrat', sans-serif; }
+    body { background-color: #f0f2f5; color: #111; height: 100vh; display: flex; overflow: hidden; }
+    
+    /* ================= เมนูด้านข้าง (สำหรับจอคอม) ================= */
+    .app-sidebar { width: 80px; background: #111; display: flex; flex-direction: column; align-items: center; padding-top: 20px; z-index: 10; }
+    .sidebar-logo { font-weight: 900; font-size: 0.85rem; text-align: center; margin-bottom: 40px; color: #fff; letter-spacing: -0.5px; line-height: 1.2; }
+    
+    .menu-btn { position: relative; width: 54px; height: 54px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; margin-bottom: 20px; cursor: pointer; transition: 0.2s; gap: 4px; }
+    .menu-btn span { font-size: 0.55rem; font-weight: 800; }
+    .menu-btn .material-icons-outlined { font-size: 22px; }
+    .menu-btn:hover { color: #fff; background: #222; }
+    .menu-btn.active { background: #fff; color: #111; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+    /* 🔔 แจ้งเตือนเมนูด้านข้าง */
+    .sidebar-badge { position: absolute; top: -6px; right: -6px; background: #ff3d00; color: white; border-radius: 20px; min-width: 20px; height: 20px; padding: 0 5px; font-size: 11px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 100; display: none; }
+
+    /* ================= ส่วนแสดงเนื้อหาหลัก ================= */
+    .app-body { flex: 1; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .page-view { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #111; color: white; padding: 15px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .header h1 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.2rem; letter-spacing: 1px; margin: 0; display: flex; align-items: center; gap: 10px; }
+
+    /* ================= POS CSS ================= */
+    .pos-layout { flex: 1; display: flex; overflow: hidden; background: #fff; border-radius: 16px; margin: 0 20px 20px 20px; border: 1px solid #ddd;}
+    .pos-products-side { flex: 1; display: flex; flex-direction: column; background: #fdfdfd; overflow: hidden; }
+    .pos-top-bar { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; background: white; gap: 10px;}
+    .pos-search-box { flex: 1; display: flex; align-items: center; background: #f0f2f5; padding: 8px 15px; border-radius: 8px; border: 1px solid #eee; }
+    .pos-search-box input { border: none; background: transparent; outline: none; width: 100%; font-size: 0.85rem; margin-left: 10px; font-weight: 600;}
+    select.group-filter { padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; background: #111; color: #fff; font-weight: 700; font-size: 0.8rem; outline: none; cursor: pointer; }
+    
+    .pos-scroll-area { flex: 1; overflow-y: auto; padding: 20px; }
+    .pos-categories { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+    .pos-cat-btn { padding: 6px 14px; border: 1px solid #111; background: #fff; color: #111; font-weight: 700; border-radius: 4px; cursor: pointer; font-size: 0.7rem; white-space: nowrap; }
+    .pos-cat-btn.active { background: #111; color: #fff; }
+    
+    .pos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    .pos-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }
+    .pos-card:hover { border-color: #111; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+    .pos-img-box { height: 100px; background: #f7f7f7; border-radius: 6px; margin-bottom: 8px; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+    .pos-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .pos-title { font-size: 0.8rem; font-weight: 700; line-height: 1.3; margin-bottom: 8px; color: #333; height: 32px; overflow: hidden; }
+    .pos-card-bottom { display: flex; justify-content: space-between; align-items: center; }
+    .pos-price { font-size: 0.95rem; font-weight: 900; color: #111; font-family:'Montserrat'; }
+    .pos-btn-add { background: #111; color: #fff; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 1.1rem; display:flex; align-items:center; justify-content:center;}
+
+    .pos-cart-side { width: 340px; background: #fff; border-left: 1px solid #eee; display: flex; flex-direction: column; }
+    .pos-cart-header { padding: 15px 20px; border-bottom: 1px solid #eee; background: #fdfdfd; }
+    .pos-cart-header h2 { font-size: 1rem; font-weight: 900; color: #111; }
+    .pos-cart-items { flex: 1; overflow-y: auto; padding: 15px; }
+    .pos-c-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px dashed #eee; padding-bottom: 12px; }
+    .pos-c-title { font-size: 0.75rem; font-weight: 700; margin-bottom: 3px; color:#222; }
+    .pos-c-price { font-size: 0.85rem; font-weight: 900; color: #ff3d00; }
+    .pos-c-qty { display: flex; align-items: center; gap: 8px; }
+    .pos-c-btn { width: 24px; height: 24px; background: #e0e0e0; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .pos-cart-footer { background: #111; color: #fff; padding: 15px 20px; }
+    .pos-footer-row { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; margin-bottom: 8px; color: #aaa; }
+    .pos-grand-total { display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 900; color: #fff; margin-bottom: 15px; border-top: 1px solid #222; padding-top: 12px;}
+    .pos-btn-checkout { width: 100%; background: #fff; color: #111; border: none; padding: 12px; font-weight: 900; font-size: 0.85rem; border-radius: 6px; cursor: pointer; text-transform: uppercase;}
+    .pos-btn-checkout:hover { background: #00e676; }
+
+    /* Modals */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto;}
+    .summary-box { background: #fafafa; padding: 12px; border-radius: 8px; border: 1px dashed #ddd; margin-bottom: 15px; font-size: 0.8rem; max-height: 120px; overflow-y: auto; }
+    .summary-item { display: flex; justify-content: space-between; margin-bottom: 5px; color: #444; font-weight: 600;}
+    .input-group { flex: 1; display: flex; flex-direction: column; margin-bottom: 12px;}
+    .input-group label { display: block; font-size: 0.7rem; font-weight: 800; margin-bottom: 4px; color: #555; text-transform: uppercase;}
+    .input-group input, .input-group select { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; font-weight: 600; outline: none; background: #fdfdfd; }
+    .btn-action { display: inline-flex; align-items: center; justify-content: center; gap: 5px; background: #f8f8f8; color: #111; padding: 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; border: none; cursor: pointer; width: 100%; margin-bottom: 10px;}
+    .loading { text-align: center; padding: 50px; color: #666; font-weight: 700; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* ================= 📱 MOBILE COMPACT MODE (จอ 360x896) ================= */
+    @media (max-width: 768px) {
+      /* แถบเมนูด้านล่าง (Bottom Nav) */
+      .app-sidebar { width: 100%; height: 50px; flex-direction: row; justify-content: space-around; padding: 0; position: fixed; bottom: 0; left: 0; z-index: 1000; background: #111; border-top: 1px solid #222; }
+      .sidebar-logo { display: none; }
+      .menu-btn { width: auto; height: 100%; flex: 1; margin: 0; border-radius: 0; gap: 2px; }
+      .menu-btn .material-icons-outlined { font-size: 18px; }
+      .menu-btn span:last-child { font-size: 0.45rem; }
+      .sidebar-badge { top: 3px; right: 50%; transform: translateX(10px); width: 14px; height: 14px; min-width: 14px; font-size: 8px; padding: 0; }
+
+      .app-body { padding-bottom: 50px; }
+
+      /* ย่อส่วนหัว (Header) */
+      .header { padding: 6px 10px; border-radius: 8px; margin: 8px 10px; }
+      .header h1 { font-size: 0.8rem; }
+      .header h1 .material-icons-outlined { font-size: 16px; }
+
+      /* จัด Layout POS ใหม่: สินค้าอยู่บน */
+      .pos-layout { flex-direction: column; margin: 0 10px 10px 10px; border-radius: 10px; }
+      .pos-products-side { flex: 1; min-height: 0; } 
+
+      /* ย่อส่วนค้นหา / Filter ให้เล็กสุดๆ */
+      .pos-top-bar { padding: 8px; flex-direction: column; gap: 6px; align-items: stretch; }
+      .pos-search-box { padding: 4px 8px; }
+      .pos-search-box input { font-size: 0.75rem; margin-left: 5px;}
+      select.group-filter { padding: 4px 8px; font-size: 0.75rem; }
+      .pos-categories { margin-bottom: 8px; }
+      .pos-cat-btn { padding: 4px 8px; font-size: 0.6rem; }
+
+      /* กริดสินค้า: เล็กกะทัดรัด */
+      .pos-scroll-area { padding: 8px; }
+      .pos-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+      .pos-card { padding: 6px; border-radius: 8px; }
+      .pos-img-box { height: 70px; margin-bottom: 4px; }
+      .pos-title { font-size: 0.6rem; height: 24px; margin-bottom: 2px; line-height: 1.2; }
+      .pos-price { font-size: 0.75rem; }
+      .pos-btn-add { width: 22px; height: 22px; font-size: 0.9rem; border-radius: 4px;}
+
+      /* 🛒 ตะกร้าสินค้า: บีบให้เตี้ยและแบนที่สุด (กินที่ไม่เกิน 25% ของจอ) */
+      .pos-cart-side { width: 100%; border-left: none; border-top: 2px solid #111; max-height: 25vh; }
+      .pos-cart-header { display: none; } /* 🚫 ซ่อนหัวตะกร้าไปเลยเพื่อประหยัดพื้นที่ */
+      
+      .pos-cart-items { padding: 4px 8px; }
+      .pos-c-item { margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px solid #eee; display: flex; align-items: center; }
+      .pos-c-title { font-size: 0.6rem; flex: 1; margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 5px; color:#222;}
+      .pos-c-price { font-size: 0.65rem; margin-right: 8px; }
+      .pos-c-qty { gap: 4px; }
+      .pos-c-btn { width: 18px; height: 18px; font-size: 0.7rem; padding: 0; line-height: 1; display:flex; align-items:center; justify-content:center;}
+      
+      /* สรุปยอดด้านล่าง: ย่อให้บางที่สุด */
+      .pos-cart-footer { padding: 6px 10px; background: #111; color: #fff;}
+      .pos-footer-row { margin-bottom: 2px; font-size: 0.6rem; }
+      .pos-grand-total { font-size: 0.85rem; margin-bottom: 6px; padding-top: 4px; border-top: 1px solid #333;}
+      .pos-btn-checkout { padding: 6px; font-size: 0.7rem; height: 28px; border-radius: 4px;}
+
+      /* ย่อ Popup Modal */
+      .modal-content { width: 90%; padding: 15px; }
+      .input-group label { font-size: 0.6rem; }
+      .input-group input, .input-group select { padding: 8px 10px; font-size: 0.75rem; }
+      .btn-action { padding: 10px; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 🔒 Login Overlay -->
+  <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
+    <h2 style="margin-bottom: 20px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px;">SAVAGE SHOP</h2>
+    <div style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <h3 style="color: #111; margin-bottom: 20px; text-align: center; font-weight: 900;">ເຂົ້າສູ່ລະບົບ (POS)</h3>
+      <div style="margin-bottom: 15px;"><label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Username</label><input type="text" id="loginUser" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-weight: 600;"></div>
+      <div style="margin-bottom: 20px;"><label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Password</label><input type="password" id="loginPass" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-weight: 600;"></div>
+      <button onclick="checkLogin()" style="width: 100%; padding: 14px; background: #00e676; color: #111; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; text-transform: uppercase;">Login</button>
+      <p id="loginError" style="color: red; font-size: 0.8rem; font-weight: bold; text-align: center; margin-top: 15px; display: none;">❌ Username ຫຼື Password ບໍ່ຖືກຕ້ອງ!</p>
+    </div>
+  </div>
+
+<div class="app-sidebar">
+    <div class="sidebar-logo">SAVAGE<br>SHOP</div>
+    <div class="menu-btn" onclick="linkToPage('dashboard')"><span class="material-icons-outlined">dashboard</span><span>ພາບລວມ</span></div>
+    <div class="menu-btn" onclick="linkToPage('admin')">
+      <div class="sidebar-badge" id="nav-badge-pending">0</div>
+      <span class="material-icons-outlined">receipt_long</span><span>ອໍເດີ້</span>
+    </div>
+    <div class="menu-btn active" onclick="linkToPage('pos')"><span class="material-icons-outlined">point_of_sale</span><span>POS ບິນ</span></div>
+    <div class="menu-btn" onclick="linkToPage('stock_check')"><span class="material-icons-outlined">inventory</span><span>ສະຕັອກ</span></div>
+    <div class="menu-btn" onclick="linkToPage('stock_in')"><span class="material-icons-outlined">inventory_2</span><span>ສັ່ງຂອງ(PO)</span></div>
+    <div class="menu-btn" onclick="linkToPage('finance')"><span class="material-icons-outlined">money_off</span><span>ລາຍຈ່າຍ</span></div>
+    <div class="menu-btn" onclick="linkToPage('product_manage')"><span class="material-icons-outlined">add_box</span><span>ສິນຄ້າໃໝ່</span></div>
+    
+    <div class="menu-btn" onclick="logoutSavage()" style="margin-top: 30px; color: #ff3d00;">
+      <span class="material-icons-outlined">logout</span><span>ອອກລະບົບ</span>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <!-- 🛒 ພື້ນທີ່ POS -->
+    <div id="view-pos" class="page-view" style="display: flex;">
+      <div style="padding: 20px 20px 0 20px;">
+        <div class="header">
+          <h1><span class="material-icons-outlined">shopping_bag</span> POINT OF SALE (ລະບົບໜ້າຮ້ານ & ອອກບິນລູກຄ້າ)</h1>
+          <div style="font-size:0.8rem; font-weight:800; background:rgba(255,255,255,0.1); padding:5px 12px; border-radius:20px;">MODE: ONLINE</div>
+        </div>
+      </div>
+
+      <div class="pos-layout">
+        <div class="pos-products-side">
+          <div class="pos-top-bar">
+            <div class="pos-search-box">
+              <span class="material-icons-outlined" style="color:#999;">search</span>
+              <input type="text" id="posSearchInput" placeholder="ຄົ້ນຫາຊື່ສິນຄ້າ..." onkeyup="applyFilters()">
+            </div>
+            <select id="posCategorySelect" class="group-filter" onchange="applyFilters()">
+              <option value="ALL">ທຸກໝວດໝູ່ (All Categories)</option>
+            </select>
+          </div>
+          
+          <div class="pos-scroll-area">
+            <div class="pos-categories" id="posModelTabs"></div>
+            <div id="pos-loader" class="loading"><span class="material-icons-outlined" style="animation: spin 1s linear infinite; font-size:40px;">sync</span><br>ກຳລັງໂຫຼດສິນຄ້າ...</div>
+            <div class="pos-grid" id="posProductGrid"></div>
+          </div>
+        </div>
+
+        <div class="pos-cart-side">
+          <div class="pos-cart-header"><h2>ตะกร้าບິນໜ້າຮ້าน</h2></div>
+          <div class="pos-cart-items" id="posCartItems">
+            <div style="text-align:center; color:#ccc; margin-top:50px;"><span class="material-icons-outlined" style="font-size:40px;">shopping_basket</span><br><span style="font-size:0.75rem; font-weight:bold;">ຍັງບໍ່ມີສິນຄ້າ</span></div>
+          </div>
+          <div class="pos-cart-footer">
+            <div class="pos-footer-row"><span>ຈຳນວນສິນຄ້າ</span><span id="posTotalCount">0</span></div>
+            <div class="pos-grand-total"><span>ລວມມູນຄ່າ</span><span id="posGrandTotal">0 ₭</span></div>
+            <button class="pos-btn-checkout" onclick="openPosCheckout()">ອອກບິນລູກຄ້າ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Checkout -->
+  <div class="modal" id="posCheckoutModal">
+    <div class="modal-content">
+      <h3 style="margin-bottom:10px; font-weight:900; border-bottom:2px solid #111; padding-bottom:8px;">🛒 ສະຫຼຸບລາຍການສັ່ງຊື້ (Checkout)</h3>
+      <div class="summary-box" id="checkoutSummaryItems"></div>
+      <div style="display:flex; justify-content:space-between; margin-bottom: 10px;"><span style="font-weight:700; font-size:0.8rem; color:#666;">ລວມມູນຄ່າສິນຄ້າ:</span><span id="modalSubtotal" style="font-weight:900; font-size:0.95rem; color:#111;">0 ₭</span></div>
+      <div class="input-group" style="border: 1px solid #00e676; padding: 10px; border-radius: 8px; background: #e8f5e9;">
+        <label style="color:#2e7d32;">ໃສ່ສ່ວນຫຼຸດ (ຖ້າມີ):</label>
+        <input type="number" id="posDiscount" placeholder="0" onkeyup="calculateFinalTotal()" onchange="calculateFinalTotal()" style="border:1px solid #a5d6a7;">
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom: 15px; border-bottom: 2px dashed #ddd; padding-bottom:10px;">
+        <span style="font-weight:900; font-size:1rem; color:#111;">ຍອດລວມສຸດທິ:</span><span id="modalNetTotal" style="font-weight:900; font-size:1.3rem; color:#ff3d00;">0 ₭</span>
+      </div>
+      <div style="background: #fdfdfd; border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <h4 style="margin-bottom: 10px; font-size: 0.8rem; color: #333;">📦 ຂໍ້ມູນลູກຄ້າ & ບ່ອນຈັດສົ່ງ</h4>
+        <div style="display:flex; gap:10px;">
+          <div class="input-group" style="flex:1;"><label>ຊື່ລູກຄ້າ (Name):</label><input type="text" id="posCustName" placeholder="ຊື່ລູກຄ້າ"></div>
+          <div class="input-group" style="flex:1;"><label>ເບີໂທ (Phone):</label><input type="text" id="posCustPhone" placeholder="020 xxxx xxxx"></div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="input-group" style="flex:1;">
+            <label>ແຂວງ (Province):</label>
+            <select id="posCustProvince" onchange="updatePosDistricts()">
+              <option value="" disabled selected>-- ເລືອກແຂວງ --</option>
+              <option value="ນະຄອນຫຼວງວຽງຈັນ">ນະຄອນຫຼວງວຽງຈັນ</option>
+              <option value="ຜົ້ງສາລີ">ຜົ້ງສາລີ</option>
+              <option value="ຫຼວງນ້ຳທາ">ຫຼວງນ້ຳທາ</option>
+              <option value="ອຸດົມໄຊ">ອຸດົມໄຊ</option>
+              <option value="ບໍ່ແກ້ວ">ບໍ່ແກ້ວ</option>
+              <option value="ຫຼວງພະບາງ">ຫຼວງພະບາງ</option>
+              <option value="ຫົວພັນ">ຫົວພັນ</option>
+              <option value=".../profile" class="nav-link">
+              <option value="ໄຊຍะບູລີ">ໄຊຍະບູລີ</option>
+              <option value="ຊຽງຂວາງ">ຊຽງຂວາງ</option>
+              <option value="ວຽງຈັນ">ວຽງຈັນ</option>
+              <option value="ບໍລິຄຳໄຊ">ບໍລິຄຳໄຊ</option>
+              <option value="ຄຳມ່ວນ">ຄຳມ່ວນ</option>
+              <option value="ສະຫວັນນະເຂດ">ສະຫວັນນະເຂດ</option>
+              <option value="ສາລະວັນ">ສາລະວັນ</option>
+              <option value="ເຊກອງ">ເຊກອງ</option>
+              <option value="ຈຳປາສັກ">ຈຳປາສັກ</option>
+              <option value="ອັດຕະປື">ອັດຕະປື</option>
+              <option value=".../profile" class="nav-link">
+              <option value="ໄຊສົມບູນ">ໄຊສົມบູນ</option>
+            </select>
+          </div>
+          <div class="input-group" style="flex:1;"><label>ເມືອງ (District):</label><select id="posCustDistrict" disabled><option value="" disabled selected>-- ເລືອກກ່ອນ --</option></select></div>
+        </div>
+        <div class="input-group"><label>ສາຂາຂົນສົ່ງ (SHIPPING BRANCH):</label><input type="text" id="posCustAddress" placeholder="ຕົວຢ່າງ: ສາຂາໄຊທານີ..."></div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <div class="input-group" style="flex:1;"><label>ຂົນສົ່ງ (Express):</label><select id="posCustExpress"><option value="ຮັບໜ້າຮ້ານ">ຮັບໜ້າຮ້ານ</option><option value="ຮຸ່ງອາລຸນ">ຮຸ່ງອາລຸນ</option><option value="ອານຸສິດ">ອານຸສິດ</option><option value="ຈັດສົ່ງພາຍໃນ">ຈັດສົ່ງພາຍໃນ</option></select></div>
+        <div class="input-group" style="flex:1;"><label>ຊຳລະດ້ວຍ (Payment):</label><select id="posCustPayment"><option value="ໂอนເງິນ (Transfer)">ໂอนເງິນ (Transfer)</option><option value="ເງິນສົດ (Cash)">ເງິນສົດ (Cash)</option><option value="ປາຍທາງ (COD)">ເກັບປາຍທາງ (COD)</option></select></div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <button onclick="document.getElementById('posCheckoutModal').style.display='none'" style="flex:1; padding:12px; background:#eee; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">ຍົກເລີກ</button>
+        <button id="btnPosSubmit" onclick="submitPosOrderData()" style="flex:2; padding:12px; background:#111; color:#fff; border:none; border-radius:6px; font-weight:900; cursor:pointer; text-transform: uppercase;">ຢືນຢັນສ້າງບິນ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Success -->
+  <div class="modal" id="posSuccessModal">
+    <div class="modal-content" style="text-align: center; width: 350px;">
+      <span class="material-icons-outlined" style="font-size: 60px; color: #00e676;">check_circle</span>
+      <h2 style="margin: 10px 0; font-family:'Montserrat', sans-serif; font-weight:900;">ສ້າງບິນສຳເລັດ!</h2>
+      <p style="color: #666; font-weight: 600;">Order ID: <strong id="successOrderId" style="color:#111; font-size:1.1rem;"></strong></p>
+      <div style="margin-top: 25px;">
+        <button id="btnPosWa" class="btn-action" style="background: #25D366; color: #fff;"><span class="material-icons-outlined">chat</span> ແຊັດສົ່ງບິນ (WhatsApp)</button>
+        <button id="btnPosPrint" class="btn-action" style="background: #111; color: #fff;"><span class="material-icons-outlined">receipt_long</span> ເບິ່ງຮູບໃບຮັບເງິນ (Print)</button>
+        <button onclick="document.getElementById('posSuccessModal').style.display='none'" class="btn-action" style="background: #eee; color: #333;">ປິດໜ້າຕ່າງ</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- 🔒 ລະບົບ Login & Link ---
+    function linkToPage(pageName) {
+      google.script.run.withSuccessHandler(function(url) {
+        window.top.location.href = url + '?page=' + pageName;
+      }).getScriptUrl();
+    }
+
+    function checkAuth() {
+      if (localStorage.getItem('savage_auth') === 'true') {
+        document.getElementById('loginOverlay').style.display = 'none';
+        loadPosProductsFromServer(); // โหลดรูปสินค้าของ POS ทันที
+      } else { document.getElementById('loginOverlay').style.display = 'flex'; }
+    }
+
+    function checkLogin() {
+      var u = document.getElementById('loginUser').value;
+      var p = document.getElementById('loginPass').value;
+      if (u === 'savage' && p === '112233') {
+        localStorage.setItem('savage_auth', 'true'); checkAuth();
+      } else { document.getElementById('loginError').style.display = 'block'; }
+    }
+
+    function logoutSavage() { localStorage.removeItem('savage_auth'); location.reload(); }
+    window.onload = function() { checkAuth(); };
+
+    // --- 🛒 ລະບົບ POS (ດຶງສິນຄ້າ & ຄິດເງິນ) ---
+    var globalPosProducts = [];
+    var posCart = [];
+    var currentCategory = 'ALL';
+    var currentModel = 'ALL';
+    var cartSubtotal = 0;
+
+    var laoDistricts = {
+      "ນະຄອນຫຼວງວຽງຈັນ": ["ຈันທະບູລີ", "ສີໂຄດຕະບອງ", "ໄຊເສດຖາ", "ສີສັດຕະນາກ", "ນາຊາຍທອງ", "ໄຊທານີ", "ຫາດຊາຍຟອງ", "ສັງທອງ", "ປາກງື່ມ"],
+      "ຜົ້ງສາລີ": ["ຜົ້ງສາລີ", "ໃໝ່", "ຂວາ", "ສຳພັນ", "ບຸນເໜືອ", "ຍອດອູ", "ບຸນໃຕ້"],
+      "ຫຼວງນ້ຳທາ": ["ຫຼວງນ້ຳທາ", "ສິງ", "ລອງ", "ວຽງພູຄາ", "ນາແລ"],
+      "ອຸດົມໄຊ": ["ໄຊ", "ຫຼາ", "ນາໝໍ້", "ງາ", "ແບ່ງ", "ຮຸນ", "ປາກແບ່ງ"],
+      "ບໍ່ແກ້ວ": ["ຫ້ວຍຊາຍ", "ຕົ້ນເຜິ້ງ", "ເມິງ", "ຜາອຸດົມ", "ປາກທา"],
+      "ຫຼວງພະບາງ": ["ຫຼວງພະບາງ", "ຊຽງເງິນ", "ນານ", "ປາກອູ", "ນ້ຳບາກ", "ງອຍ", "ປາກແຊງ", "ໂພນໄຊ", "ຈອມເພັດ", "ວຽງຄຳ", "ພູຄູນ"],
+      "ຫົວພັນ": ["ຊຳເໜືອ", "ຊຽງຄໍ້", "ຮ້ຽມ", "ວຽງໄຊ", "ຫົວເມືອງ", "ຊຳໃຕ້", "ສົບເບົາ", "ແອດ", "ກັວນ", "ຊ່ອນ"],
+      "ໄຊຍະບູລี": ["ໄຊຍະບູລີ", "ຄອບ", "ຊຽງຮ່ອນ", "ເງິນ", "ຫົງສາ", "ໄຊສະຖານ", "ຄຳ", "ປາກລາຍ", "ແກ່ນທ້າວ", "ບໍ່ແຕນ", "ທົ່ງມີໄຊ"],
+      "ຊຽງຂວາງ": ["ແປກ", "ຄຳ", "ໜອງແຮດ", "ຄູນ", "ໝອກໃໝ່", "ພູກູດ", "ຜາໄຊ"],
+      "ວຽງຈັນ": ["ໂພນໂຮງ", "ທຸລະຄົມ", "ແກ້ວອຸດົມ", "ກາສີ", "ວັງວຽງ", "ເຟືອງ", "ຊະນະຄາມ", "ແມດ", "ວຽງຄຳ", "ຫີນເຫີບ", "ໝື່ນ"],
+      "ບໍລິຄຳໄຊ": ["ປາກຊັນ", "ທ່າພະບາດ", "ປາກກະດິງ", "ບໍລິຄັນ", "ຄຳເກີດ", "ວຽງທອງ", "ໄຊຈຳພອນ"],
+      "ຄຳມ່ວນ": ["ທ່າແຂກ", "ມະຫາໄຊ", "ໜອງບົກ", "ຫີນບູນ", "ຍົມມະລາດ", "ບົວລະພາ", "ນາກາຍ", "ເຊບັ້ງໄຟ", "ໄຊບົວທອງ", "ຄູນຄຳ"],
+      "ສະຫວັນນະເຂດ": ["ໄກສອນ ພົມວິຫານ", "ອຸທຸມພອນ", "ອາດສະພັງທອງ", "ພີນ", "ເຊໂປນ", "ນອງ", "ທ່າປາງທອງ", "ສອງຄອນ", "ຈຳພອນ", "ຊົນນະບູລີ", "ໄຊບູລີ", "ວີລະບຸລີ", "ອາດສະພອນ", "ໄຊພູທອງ", "ພະລານໄซ"],
+      "ສາລະວັນ": ["ສາລະວັນ", "ຕະໂອ້ຍ", "ຕຸ້ມລານ", "ລະຄອນເພັງ", "ວາປີ", "ຄົງເຊໂດນ", "ສະໝ້ວຍ"],
+      "ເຊກອງ": ["ລະມາມ", "ກະລຶມ", "ດາກຈຶງ", "ທ່າແຕງ"],
+      "ຈຳປາສັກ": ["ປາກເຊ", "ຊະນະສົມບູນ", "ບາຈຽງຈະເລີນສຸກ", "ປາກຊ່ອງ", "ປະທຸມພອນ", "ໂພນທອງ", "ຈຳປາສັກ", "ສຸຂຸມາ", "ມູນລະປາໂມກ", "ໂຂງ"],
+      "ອັດຕະປື": ["ໄຊເສດຖາ", "ສາມັກຄີໄຊ", "ສະໜາມໄຊ", "ຊານໄຊ", "ພູວົງ"],
+      "ໄຊສົມບູນ": ["ອະນຸວົງ", "ລ້ອງຊານ", "ລ້ອງແຈ້ງ", "ທ່າໂທມ", "ຮົ່ມ"]
+    };
+
+    function updatePosDistricts() {
+      var provSelect = document.getElementById('posCustProvince');
+      var distSelect = document.getElementById('posCustDistrict');
+      var selectedProv = provSelect.value;
+      distSelect.innerHTML = '<option value="" disabled selected>-- ເລືອກເມືອງກ່ອນ --</option>'; 
+      if (selectedProv && laoDistricts[selectedProv]) {
+        var districts = laoDistricts[selectedProv];
+        for (var i = 0; i < districts.length; i++) { distSelect.innerHTML += '<option value="' + districts[i] + '">' + districts[i] + '</option>'; }
+        distSelect.disabled = false; 
+      } else { distSelect.disabled = true; }
+    }
+
+    function getDirectImageUrl(url) {
+      if (!url) return 'https://via.placeholder.com/150?text=No+Image';
+      var match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) return 'https://drive.google.com/thumbnail?id=' + match[1] + '&sz=w300';
+      return url; 
+    }
+
+    function loadPosProductsFromServer() {
+      document.getElementById('pos-loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(function(jsonString) {
+          try {
+            var response = JSON.parse(jsonString); 
+            if (!response.success) throw new Error(response.error);
+            globalPosProducts = response.data || [];
+            document.getElementById('pos-loader').style.display = 'none';
+            if (globalPosProducts.length === 0) {
+              document.getElementById('posProductGrid').innerHTML = '<div style="color:#666; font-weight:bold; text-align:center;">ບໍ່ມີສິນຄ້າໃນລະບົບ</div>'; return;
+            }
+            renderPosCategories(); renderPosModels(); renderPosProducts(globalPosProducts); 
+          } catch (e) { document.getElementById('pos-loader').innerHTML = '<div style="color:red;">' + e.message + '</div>'; }
+      }).getPosProducts();
+    }
+
+    function renderPosCategories() {
+      var cats = [];
+      globalPosProducts.forEach(function(p) { 
+        if(p.category && p.category !== 'All PARTS' && p.category !== '' && cats.indexOf(p.category) === -1) cats.push(p.category); 
+      });
+      cats.sort();
+      var html = '<option value="ALL">ທຸກໝວດໝູ່ (All Categories)</option>';
+      cats.forEach(function(c) { html += '<option value="'+c+'">'+c+'</option>'; });
+      document.getElementById('posCategorySelect').innerHTML = html;
+    }
+
+    function renderPosModels() {
+      var models = [];
+      globalPosProducts.forEach(function(p) {
+        var mArr = p.model.split(','); 
+        mArr.forEach(function(m) {
+          var cleanM = m.trim();
+          if(cleanM && cleanM !== 'All MODELS' && cleanM !== '' && models.indexOf(cleanM) === -1) models.push(cleanM);
+        });
+      });
+      models.sort(); 
+      var html = `<button class="pos-cat-btn active" onclick="filterPosModel('ALL', this)">ທຸກລຸ້ນລົດ</button>`;
+      models.forEach(function(m) { html += `<button class="pos-cat-btn" onclick="filterPosModel('${m}', this)">${m.toUpperCase()}</button>`; });
+      document.getElementById('posModelTabs').innerHTML = html;
+    }
+
+    function filterPosModel(model, btn) {
+      var btns = document.getElementsByClassName('pos-cat-btn');
+      for(var i=0; i<btns.length; i++) btns[i].classList.remove('active');
+      btn.classList.add('active');
+      currentModel = model; applyFilters(); 
+    }
+
+    function applyFilters() {
+      currentCategory = document.getElementById('posCategorySelect').value;
+      var searchText = document.getElementById('posSearchInput').value.toLowerCase();
+      var filtered = globalPosProducts.filter(function(p) {
+        var passCat = (currentCategory === 'ALL') || (p.category === currentCategory);
+        var passModel = (currentModel === 'ALL') || (p.model.indexOf(currentModel) !== -1);
+        var passSearch = p.name.toLowerCase().includes(searchText);
+        return passCat && passModel && passSearch;
+      });
+      renderPosProducts(filtered);
+    }
+
+ function renderPosProducts(products) {
+      if (products.length === 0) {
+        document.getElementById('posProductGrid').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: #888; font-weight: bold;">ບໍ່ພົບສິນຄ້າທີ່ຄົ້ນຫາ</div>'; return;
+      }
+      var html = '';
+      products.forEach(function(p) {
+        var finalImg = getDirectImageUrl(p.img); 
+        html += `
+          <div class="pos-card">
+            <div class="pos-img-box"><img src="${finalImg}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'"></div>
+            <div class="pos-title">${p.name}</div>
+            <div class="pos-card-bottom">
+              <div class="pos-price">${p.price.toLocaleString()} ₭</div>
+              <button class="pos-btn-add" onclick="addPosToCart('${p.id}')">+</button>
+            </div>
+          </div>`;
+      });
+      document.getElementById('posProductGrid').innerHTML = html;
+    }
+
+    // 🌟 ฟังก์ชันกดเพิ่มสินค้าลงตะกร้า POS (ดักจับสต็อก)
+    function addPosToCart(id) {
+      // ค้นหาสินค้าจากสต็อก
+      let product = globalPosProducts.find(p => p.id === id);
+      if (!product) return;
+
+      let existing = posCart.find(i => i.id === id);
+      
+      if (existing) {
+        // เช็กว่าถ้าบวกเพิ่มอีก 1 ชิ้น จะเกินสต็อกไหม?
+        if (existing.qty + 1 > product.stock) {
+          alert("⚠️ ຂໍອະໄພ! ສິນຄ້ານີ້ມີໃນສະຕັອກພຽງ " + product.stock + " ຊິ້ນເທົ່ານັ້ນ!");
+          return; 
+        }
+        existing.qty += 1;
+      } else {
+        // เช็กว่าของหมดสต็อกตั้งแต่แรกหรือไม่?
+        if (product.stock < 1) {
+          alert("⚠️ ຂໍອະໄພ! ສິນຄ້ານີ້ໝົດສະຕັອກແແລ້ວ!");
+          return;
+        }
+        posCart.push({ id: product.id, name: product.name, price: product.price, qty: 1, stock: product.stock });
+      }
+      updatePosCartUI(); 
+    }
+
+    // 🌟 ฟังก์ชันกดบวก/ลบ จำนวนในตะกร้า (ปุ่ม + และ -)
+    function updatePosCartQty(index, change) {
+      let item = posCart[index];
+      let newQty = item.qty + change;
+      
+      // ดักจับไม่ให้กดบวกเกินสต็อก
+      if (newQty > item.stock) {
+        alert("⚠️ ຂໍອະໄພ! ສິນຄ້ານີ້ມີໃນສະຕັອກພຽງ " + item.stock + " ຊິ້ນ!");
+        return;
+      }
+      
+      // ถ้าลดจนเหลือ 0 ให้ลบออกจากตะกร้า
+      if (newQty < 1) {
+        posCart.splice(index, 1);
+      } else {
+        item.qty = newQty;
+      }
+      updatePosCartUI(); 
+    }
+
+    function updatePosCartUI() {
+      var container = document.getElementById('posCartItems');
+      if(posCart.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:#ccc; margin-top:50px;"><span class="material-icons-outlined" style="font-size:40px;">shopping_basket</span><br><span style="font-size:0.75rem; font-weight:bold;">ຍັງບໍ່ມີສິນຄ້າ</span></div>`;
+        document.getElementById('posTotalCount').innerText = '0';
+        document.getElementById('posGrandTotal').innerText = '0 ₭'; return;
+      }
+      var html = ''; var grandTotal = 0; var totalQty = 0;
+      posCart.forEach(function(item, index) {
+        grandTotal += (item.price * item.qty); totalQty += item.qty;
+        html += `
+          <div class="pos-c-item">
+            <div><div class="pos-c-title">${item.name}</div><div class="pos-c-price">${item.price.toLocaleString()} ₭</div></div>
+            <div class="pos-c-qty"><button class="pos-c-btn" onclick="updatePosCartQty(${index}, -1)">-</button><span style="font-weight:900;">${item.qty}</span><button class="pos-c-btn" onclick="updatePosCartQty(${index}, 1)">+</button></div>
+          </div>`;
+      });
+      container.innerHTML = html;
+      document.getElementById('posTotalCount').innerText = totalQty;
+      document.getElementById('posGrandTotal').innerText = grandTotal.toLocaleString() + ' ₭';
+    }
+    
+    function openPosCheckout() {
+      if(posCart.length === 0) { alert("ກະລຸນາເລືອກສິນຄ້າກ່ອນ!"); return; }
+      cartSubtotal = 0; var summaryHtml = '';
+      posCart.forEach(function(i) {
+        var lineTotal = i.price * i.qty; cartSubtotal += lineTotal;
+        summaryHtml += `<div class="summary-item"><span>${i.qty}x ${i.name}</span><strong>${lineTotal.toLocaleString()} ₭</strong></div>`;
+      });
+      document.getElementById('checkoutSummaryItems').innerHTML = summaryHtml;
+      document.getElementById('modalSubtotal').innerText = cartSubtotal.toLocaleString() + ' ₭';
+      document.getElementById('posDiscount').value = ''; 
+      calculateFinalTotal();
+      document.getElementById('posCheckoutModal').style.display = 'flex';
+    }
+
+    function calculateFinalTotal() {
+      var discount = parseFloat(document.getElementById('posDiscount').value) || 0;
+      var net = cartSubtotal - discount; if (net < 0) net = 0; 
+      document.getElementById('modalNetTotal').innerText = net.toLocaleString() + ' ₭';
+    }
+
+    function submitPosOrderData() {
+      var name = document.getElementById('posCustName').value;
+      var phone = document.getElementById('posCustPhone').value;
+      
+      var provinceElem = document.getElementById('posCustProvince');
+      var province = provinceElem ? provinceElem.value : "";
+      
+      var districtElem = document.getElementById('posCustDistrict');
+      var district = districtElem && !districtElem.disabled ? districtElem.value : "";
+      
+      var address = document.getElementById('posCustAddress').value;
+      var express = document.getElementById('posCustExpress').value;
+      var paymentType = document.getElementById('posCustPayment').value;
+      
+      var discount = parseFloat(document.getElementById('posDiscount').value) || 0;
+      var finalTotal = cartSubtotal - discount; 
+      if (finalTotal < 0) finalTotal = 0;
+
+      var discountedCart = []; 
+      var remainingDiscount = discount;
+      for (var i = 0; i < posCart.length; i++) {
+        var item = posCart[i];
+        var lineTotal = item.price * item.qty;
+        var itemDiscountTotal = 0;
+        
+        if (cartSubtotal > 0) {
+          itemDiscountTotal = Math.round(discount * (lineTotal / cartSubtotal));
+        }
+        if (i === posCart.length - 1) {
+          itemDiscountTotal = remainingDiscount; 
+        }
+
+        var actualReceivedPrice = (lineTotal - itemDiscountTotal) / item.qty;
+        discountedCart.push({ id: item.id, name: item.name, price: actualReceivedPrice, qty: item.qty });
+        remainingDiscount -= itemDiscountTotal;
+      }
+
+      var finalPaymentString = paymentType;
+      if (discount > 0) finalPaymentString += " (ມີສ່ວນຫຼຸດ " + discount.toLocaleString() + " ₭)";
+
+      var btn = document.getElementById('btnPosSubmit');
+      btn.innerText = 'ກຳລັງບັນທຶກ...'; 
+      btn.disabled = true;
+
+      var orderDataStr = { items: discountedCart, total: finalTotal };
+      var custInfoStr = { name: name, phone: phone, province: province, district: district, address: address, express: express, payment: finalPaymentString };
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if(res.success) {
+            var generatedId = res.orderId;
+            
+            var textMessage = "🏁 *ໃบສັ່ງຊື້ສິນຄ້າຈາກ SAVAGE SHOP* 🏁\n🆔 *Order ID:* `" + generatedId + "`\n--------------------------------------\n👤 *ຂໍ້ມູນຜູ້ສັ່ງຊື້ ແລະ ການຈັດສົ່ງ:*\n• ຊື່: " + (name || "-") + "\n• ເບີໂທ: " + (phone || "-") + "\n• ບໍລິສັດຂົນສົ່ງ: " + express + "\n• ສາຂາ: " + (address || "-") + "\n• ເມືອງ: " + (district || "-") + "\n• ແຂວງ: " + (province || "-") + "\n• ວິທີການຈ່າຍ: *" + finalPaymentString + "*\n--------------------------------------\n📦 *...ລາຍການສິນຄ້າ...*\n";
+            for (var i = 0; i < discountedCart.length; i++) {
+              var item = discountedCart[i]; 
+              var unitPrice = Math.round(item.price); 
+              var subtotal = Math.round(item.price * item.qty);
+              textMessage += (i + 1) + ". " + item.name + "\n   ຈຳນວນ: " + item.qty + " x " + unitPrice.toLocaleString() + " ₭\n   ...ລວມ: " + subtotal.toLocaleString() + " ₭\n";
+            }
+            textMessage += "--------------------------------------\n💰 *ຍອດລວມທັງໝົດ (TOTAL):* *" + Math.round(finalTotal).toLocaleString() + " ₭*\n--------------------------------------\n⚡ _ຂອບໃຈທີ່ອຸດໜູນ SAVAGE SHOP_ ⚡";
+
+            var waPhone = phone.replace(/[^0-9]/g, ''); 
+            if(waPhone.startsWith('020')) waPhone = '85620' + waPhone.substring(3);
+            else if(waPhone.startsWith('20')) waPhone = '85620' + waPhone.substring(2);
+            
+            var whatsappUrl = (waPhone.length >= 10) ? "https://wa.me/" + waPhone + "?text=" + encodeURIComponent(textMessage) : "https://wa.me/?text=" + encodeURIComponent(textMessage);
+
+            document.getElementById('successOrderId').innerText = generatedId;
+            document.getElementById('btnPosWa').onclick = function() { window.open(whatsappUrl, '_blank'); };
+            document.getElementById('btnPosPrint').onclick = function() { printPosBill(generatedId, custInfoStr, discountedCart, finalTotal); };
+
+            document.getElementById('posCheckoutModal').style.display = 'none';
+            document.getElementById('posSuccessModal').style.display = 'flex';
+
+            posCart = []; 
+            updatePosCartUI(); 
+            document.getElementById('posCustName').value = ''; 
+            document.getElementById('posCustPhone').value = '';
+            document.getElementById('posDiscount').value = '';
+            
+            if(provinceElem) provinceElem.value = '';
+            if(districtElem) {
+              districtElem.innerHTML = '<option value="" disabled selected>-- ເລືອກເມືອງກ່ອນ --</option>';
+              districtElem.disabled = true;
+            }
+            document.getElementById('posCustAddress').value = '';
+            
+          } else { 
+            alert('Error: ' + res.message); 
+          }
+          btn.innerText = 'ຢືນຢັນສ້າງບິນ'; 
+          btn.disabled = false;
+        })
+        .withFailureHandler(function(error) { 
+          alert('System Error: ' + error.message); 
+          btn.innerText = 'ຢືนຢັນສ້າງບິນ'; 
+          btn.disabled = false; 
+        })
+        .submitPosOrder(orderDataStr, custInfoStr); 
+    }
+
+    function printPosBill(orderId, cust, items, totalAmt) {
+      var itemsHtml = '';
+      items.forEach(function(i) {
+        var subtotal = Math.round(i.price * i.qty);
+        itemsHtml += '<div style="display:flex; justify-content:space-between; margin-bottom:5px; border-bottom: 1px dashed #ccc; padding-bottom:5px;"><div style="font-weight:900; color:#000;">' + i.qty + 'x ' + i.name + '</div><div style="font-weight:900; color:#000;">' + subtotal.toLocaleString() + ' ₭</div></div>';
+      });
+      var printWindow = window.open('', '_blank');
+      var billHtml = '<!DOCTYPE html><html><head><title>Order Bill - ' + orderId + '</title>' +
+        '<style>body { font-family: sans-serif; padding: 10px; color: #000; background: #fff; font-size: 14px; }' +
+        '.bill-container { border: 2px solid #000; padding: 20px; max-width: 400px; margin: 0 auto; border-radius: 8px; }' +
+        '.text-center { text-align: center; }' +
+        '.brand-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 5px; color: #000; }' +
+        '.order-id { font-size: 1.2rem; font-weight: 900; border: 2px solid #000; padding: 5px 10px; margin: 10px 0; border-radius: 4px; display:inline-block; }' +
+        '.info-box { margin-bottom: 15px; line-height:1.6; border-bottom:2px solid #000; padding-bottom:10px; color: #000; }' +
+        '.items-box { margin-top: 15px; margin-bottom: 15px; }' +
+        '.total-box { font-size: 1.3rem; font-weight: 900; border-top: 2px solid #000; padding-top: 10px; display:flex; justify-content:space-between; color: #000; }</style>' +
+        '</head><body><div class="bill-container"><div class="text-center"><div class="brand-title">SAVAGE SHOP</div>' +
+        '<div style="font-weight:bold;">ໃບຮັບເງິນ (Receipt)</div><div class="order-id">' + orderId + '</div></div>' +
+        '<div class="info-box"><div class="bill-name">ລູກຄ້າ: ' + (cust.name || 'ບໍ່ລະບຸຊື່') + '</div>' +
+        '<div class="bill-phone">📞 ໂທ: ' + (cust.phone || '-') + '</div>' +
+        '<div style="margin-top:8px;"><strong>ຈັດສົ່ງ:</strong> ' + cust.express + '</div>' +
+        '<div><strong>ສາຂາ/ສະຖານທີ່:</strong> ' + (cust.address || '-') + '</div>' +
+        '<div><strong>ເມືອງ:</strong> ' + (cust.district || '-') + ', <strong>ແຂວງ:</strong> ' + (cust.province || '-') + '</div>' +
+        '<div><strong>ຊຳລະດ້ວຍ:</strong> ' + cust.payment + '</div></div>' +
+        '<div class="items-box"><div style="font-weight:bold; border-bottom:1px solid #000; padding-bottom:5px; margin-bottom:8px;">ລາຍການສินຄ້າ:</div>' + itemsHtml + '</div>' +
+        '<div class="total-box"><span>ຍອດລວມທັງໝົດ:</span><span>' + totalAmt.toLocaleString() + ' ₭</span></div></div>' +
+        '<script>window.onload = function() { setTimeout(function(){ window.print(); window.close(); }, 800); };<\/script></body></html>';
+      printWindow.document.write(billHtml);
+      printWindow.document.close();
+    }
+  </script>
+</body>
+</html>

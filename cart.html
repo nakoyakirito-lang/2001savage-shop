@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: #f8f8f8; color: #111; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; padding-bottom: 160px !important; font-family: 'Noto Sans Lao', 'Montserrat', sans-serif !important; }
+    .material-icons-outlined { font-family: 'Material Icons Outlined' !important; }
+    
+    /* --- Header (ย่อขนาด) --- */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px !important; background: white; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #eee; }
+    .header .title { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.95rem !important; letter-spacing: 0.5px; text-transform: uppercase; }
+    .icon-btn { background: none; border: none; cursor: pointer; color: #111; display: flex; align-items: center; }
+    .icon-btn .material-icons-outlined { font-size: 20px !important; }
+
+    /* --- Navigation Bar --- */
+    .navigation-bar { background: white; padding: 5px 15px 10px; margin-bottom: 5px; }
+    .breadcrumbs { display: flex; align-items: center; font-size: 0.65rem; color: #ccc; font-family: 'Montserrat', sans-serif; font-weight: 600; text-transform: uppercase; }
+    .breadcrumbs a { text-decoration: none; color: #999; }
+
+    /* --- Cart Items (ย่อขนาด) --- */
+    .cart-container { padding: 10px 15px; }
+    .cart-item { display: flex; gap: 10px; align-items: center; background: white; padding: 10px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #eee; position: relative; }
+    .item-img { width: 55px; height: 55px; object-fit: contain; background: #f8f8f8; border-radius: 8px; border: 1px solid #eee; }
+    .item-details { flex-grow: 1; max-width: 65%; }
+    .item-name { font-weight: 700; font-size: 0.75rem; line-height: 1.2; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .item-price { font-family: 'Montserrat', sans-serif; font-weight: 900; color: #111; font-size: 0.85rem; }
+    
+    .qty-controls { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+    .qty-btn { border: 1px solid #ddd; background: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .qty-btn .material-icons-outlined { font-size: 14px !important; }
+    .qty-num { font-weight: 800; font-size: 0.8rem; min-width: 15px; text-align: center; }
+    
+    .btn-delete { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #ccc; cursor: pointer; }
+    .btn-delete .material-icons-outlined { font-size: 18px !important; }
+    .btn-delete:hover { color: #ff3d00; }
+
+    /* --- Empty Cart --- */
+    .empty-cart { text-align: center; padding: 40px 15px; color: #999; }
+    .empty-cart .material-icons-outlined { font-size: 3rem; color: #ddd; margin-bottom: 10px; }
+    .btn-go-home { display: inline-block; background: #111; color: white; padding: 10px 25px; border-radius: 20px; font-weight: 700; font-size: 0.75rem; margin-top: 15px; text-decoration: none; }
+
+    /* --- Form (ลดความสูงช่องกรอก) --- */
+    .customer-form { background: white; padding: 15px; border-radius: 12px; margin: 5px 15px 15px; border: 1px solid #eee; }
+    .form-title { font-weight: 800; font-size: 0.8rem; margin-bottom: 12px; border-left: 3px solid #111; padding-left: 8px; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 0.65rem; font-weight: 700; color: #666; margin-bottom: 4px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 0.8rem; outline: none; background: #fff; color: #111; }
+    .form-group input:focus, .form-group select:focus { border-color: #111; }
+
+    /* --- Order Summary (ลดความหนา) --- */
+    .order-summary-bar { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: white; padding: 10px 15px 15px; border-top: 1px solid #eee; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.03); }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .summary-label { font-weight: 800; font-size: 0.85rem; }
+    .summary-total { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.2rem; color: #ff3d00; }
+    .btn-submit-order { display: flex; align-items: center; justify-content: center; gap: 8px; background: #00e676; color: white; border-radius: 25px; padding: 12px; width: 100%; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; border: none; cursor: pointer; text-transform: uppercase; }
+    .btn-submit-order .material-icons-outlined { font-size: 18px !important; }
+  
+    /* --- Success Modal (ย่อขนาด) --- */
+    #success-modal > div { padding: 20px 15px !important; width: 90% !important; max-width: 320px !important; }
+    #success-modal h2 { font-size: 1.2rem !important; }
+    #success-modal p { font-size: 0.75rem !important; margin-bottom: 15px !important; }
+    #display-order-id { font-size: 1.3rem !important; }
+    #btn-go-wa, #success-modal button:last-child { padding: 10px !important; font-size: 0.8rem !important; margin-bottom: 8px !important; }
+
+    @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <a href="<?= getScriptUrl() ?>?page=home" target="_top" class="icon-btn">
+      <span class="material-icons-outlined">arrow_back</span>
+    </a>
+    <div class="title">SHOPPING CART</div>
+    <div style="width: 20px;"></div>
+  </header>
+
+  <div class="navigation-bar">
+    <div class="breadcrumbs">
+      <a href="<?= getScriptUrl() ?>?page=home" target="_top">HOME</a>
+      <span class="material-icons-outlined" style="font-size:10px; margin: 0 4px;">chevron_right</span>
+      <span style="color: #111; font-weight: 800;">CART</span>
+    </div>
+  </div>
+  
+  <div class="cart-container" id="cart-items-list"></div>
+
+  <div class="customer-form" id="customer-info-section" style="display: none;">
+    <div class="form-title">ຂໍ້ມູນຜູ້ສັ່ງຊື້ ແລະ ການຈັດສົ່ງ</div>
+    
+    <div class="form-group">
+      <label>ຊື່ ແລະ ນາມສະກຸນ (NAME) *</label>
+      <input type="text" id="cust-name" placeholder="ປ້ອນຊື່ຂອງທ່ານ...">
+    </div>
+    
+    <div class="form-group">
+      <label>ເບີໂທຕິດຕໍ່ (WHATSAPP PHONE) *</label>
+      <input type="tel" id="cust-phone" placeholder="ຕົວຢ່າງ: 020 XXXXXXXX">
+    </div>
+
+    <div class="form-group">
+      <label>ບໍລິສັດຂົນສົ່ງ (SHIPPING COMPANY) *</label>
+      <select id="cust-shipping-comp">
+        <option value="" disabled selected>-- ເລືອກບໍລິສັດຂົນສົ່ງ --</option>
+        <option value="ອະນຸສິດ (Anousith)">ອະນຸສິດ (Anousith)</option>
+        <option value="ຮຸງອາລຸນ (HAL)">ຮຸງອາລຸນ (HAL)</option>
+        <option value="ມີໄຊ (Mesaixay)">ມີໄຊ (Mesaixay)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>ສາຂາຂົນສົ່ງ (SHIPPING BRANCH) *</label>
+      <input type="text" id="cust-shipping-branch" placeholder="ຕົວຢ່າງ: ສາຂາໄຊທານີ, ຝາກໄອເຕັກ...">
+    </div>
+
+    <div class="form-group">
+      <label>ແຂວງ (PROVINCE) *</label>
+      <select id="cust-province" onchange="updateDistricts()">
+        <option value="" disabled selected>-- ເລືອກແຂວງ --</option>
+        <option value="ນະຄອນຫຼວງວຽງຈັນ">ນະຄອນຫຼວງວຽງຈັນ</option>
+        <option value="ຜົ້ງສາລີ">ຜົ້ງສາລີ</option>
+        <option value="ຫຼωງນ້ຳທา">ຫຼວງນ້ຳທາ</option>
+        <option value="ອຸດົມໄຊ">ອຸດົມໄຊ</option>
+        <option value="ບໍ່ແກ້ວ">ບໍ່ແກ้ວ</option>
+        <option value="ຫຼວງພະບາງ">ຫຼວງພະບາງ</option>
+        <option value="ຫົວພັນ">ຫົວພັນ</option>
+        <option value="ໄຊຍະບູລີ">ໄຊຍະບູລີ</option>
+        <option value="ຊຽງຂວາງ">ຊຽງຂວາງ</option>
+        <option value="ວຽງຈັນ">ວຽງຈັນ</option>
+        <option value="ບໍລິຄຳໄຊ">ບໍລິຄຳໄຊ</option>
+        <option value="ຄຳມ່ວນ">ຄຳມ່ວນ</option>
+        <option value="ສະຫວັນນະເຂດ">ສະຫວັນນະເຂດ</option>
+        <option value="ສາລະວັນ">ສາລະວັນ</option>
+        <option value="ເຊກອງ">ເຊກອງ</option>
+        <option value="ຈຳປาສັກ">ຈຳປາສັກ</option>
+        <option value="ອັດຕະປື">ອັດຕະປື</option>
+        <option value="ໄຊສົມບູນ">ໄຊສົມບູນ</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>ເມືອງ (DISTRICT) *</label>
+      <select id="cust-district" disabled>
+        <option value="" disabled selected>-- ກະລຸນາເລືອກແຂວງກ່ອນ --</option>
+      </select>
+    </div>
+
+  <div class="form-group">
+      <label>ວິທີການຈ່າຍເງິນ (PAYMENT METHOD) *</label>
+      <select id="cust-payment-method">
+        <option value="ໂອນເງິນ (Transfer)">ໂອນເງິນ (Transfer)</option>
+        <option value="ເກັບເງິນປາຍທາງ (COD)">ເກັບເງິນປາຍທາງ (COD)</option>
+      </select>
+    </div>
+
+  </div> 
+
+  <div class="order-summary-bar" id="summary-bar" style="display: none;">
+    <div class="summary-row">
+      <div class="summary-label">TOTAL AMOUNT:</div>
+      <div class="summary-total" id="cart-grand-total">0 ₭</div>
+    </div>
+    <button class="btn-submit-order" onclick="sendOrderViaWhatsApp()">
+      <span class="material-icons-outlined">chat</span>
+      SEND ORDER TO WHATSAPP
+    </button>
+  </div>
+
+  <div id="success-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center; backdrop-filter: blur(3px);">
+    <div style="background:white; padding:25px 15px; border-radius:16px; text-align:center; width:85%; max-width:320px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: popIn 0.3s ease;">
+      <span class="material-icons-outlined" style="font-size:50px; color:#00e676; margin-bottom:10px;">check_circle</span>
+      <h2 style="font-family:'Montserrat', sans-serif; font-size:1.2rem; font-weight:900; margin-bottom:5px; color:#111;">ORDER SUCCESS</h2>
+      <p style="font-size:0.75rem; color:#666; margin-bottom:15px; font-weight:600;">ບັນທຶກການສັ່ງຊື້ຂອງທ່ານສຳເລັດແລ້ວ</p>
+      
+      <div style="background:#f8f8f8; padding:12px; border-radius:10px; margin-bottom:15px; border:2px dashed #ddd;">
+        <p style="font-size:0.65rem; color:#555; font-weight:800; margin-bottom:4px;">ເລກທີ່ສັ່ງຊື້ (ORDER ID)</p>
+        <div id="display-order-id" style="font-family:'Montserrat', sans-serif; font-size:1.3rem; font-weight:900; color:#ff3d00; letter-spacing: 0.5px;">ORD-000000</div>
+      </div>
+
+      <button id="btn-go-wa" style="background:#111; color:white; padding:10px; border-radius:25px; border:none; font-weight:800; width:100%; font-family:'Noto Sans Lao', 'Montserrat', sans-serif; font-size:0.8rem; margin-bottom:8px; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:6px;">
+        <span class="material-icons-outlined" style="font-size:16px;">chat</span> ສົ່ງບິນເຂົ້າ WhatsApp
+      </button>
+      <button onclick="closeSuccessModal()" style="background:#f0f0f0; color:#333; padding:10px; border-radius:25px; border:none; font-weight:700; width:100%; font-family:'Noto Sans Lao', sans-serif; font-size:0.8rem; cursor:pointer;">
+        ກັບຄືນໜ້າຫຼັກ
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function autoFillProfile() {
+      var profileData = JSON.parse(localStorage.getItem('savage_profile'));
+      
+      if (profileData) {
+        if (profileData.name) document.getElementById('cust-name').value = profileData.name;
+        if (profileData.phone) document.getElementById('cust-phone').value = profileData.phone;
+        
+        if (profileData.province) {
+          document.getElementById('cust-province').value = profileData.province;
+          updateDistricts(); 
+          
+          if (profileData.district) {
+            document.getElementById('cust-district').value = profileData.district;
+          }
+        }
+      }
+    }
+
+    var globalCart = [];
+
+    var laoDistricts = {
+      "ນະຄອນຫຼວງວຽງຈັນ": ["ຈັນທະບູລີ", "ສີໂຄດຕະບອງ", "ໄຊເສດຖາ", "ສີສັດຕະນາກ", "ນາຊາຍທອງ", "ໄຊທານີ", "ຫາດຊາຍຟອງ", "ສັງທອງ", "ປາກງື່ມ"],
+      "ຜົ້ງສາລີ": ["ຜົ້ງສາລີ", "ໃໝ່", "ຂວາ", "ສຳພັນ", "ບຸນເໜືອ", "ຍອດອູ", "ບຸນໃຕ້"],
+      "ຫຼວງນ້ຳທາ": ["ຫຼວງນ້ຳທາ", "ສິງ", "ລອງ", "ວຽງພູຄາ", "ນາແລ"],
+      "ອຸດົມໄຊ": ["ໄຊ", "ຫຼາ", "ນາໝໍ້", "ງາ", "ແບ່ງ", "ຮຸນ", "ປາກແບ່ງ"],
+      "ບໍ່ແກ້ว": ["ຫ້ວຍຊາຍ", "ຕົ້ນເຜິ້ງ", "ເມິງ", "ຜາອຸດົມ", "ປາກທາ"],
+      "ຫຼວງພະບາງ": ["ຫຼວງພະບາງ", "ຊຽງເງິນ", "ນານ", "ປາກອູ", "ນ້ຳບາກ", "ງອຍ", "ປາກແຊງ", "ໂພນໄຊ", "ຈອມເພັດ", "ວຽງຄຳ", "ພູຄູນ"],
+      "ຫົວພັນ": ["ຊຳເໜືອ", "ຊຽງຄໍ້", "ຮ້ຽມ", "ວຽງໄຊ", "ຫົວເມືອງ", "ຊຳໃຕ້", "ສົບເບົາ", "ແອດ", "ກັວນ", "ຊ່ອນ"],
+      "ໄຊຍະບູລີ": ["ໄຊຍະບູລີ", "ຄອບ", "ຊຽງຮ່ອນ", "ເງິນ", "ຫົງສາ", "ໄຊສະຖານ", "ຄຳ", "ປາກລາຍ", "ແກ່ນທ້າວ", "ບໍ່ແຕນ", "ທົ່ງมีໄຊ"],
+      "ຊຽງຂວາງ": ["ແປກ", "ຄຳ", "ໜອງແຮດ", "ຄູນ", "ໝອກໃໝ່", "ພູກູດ", "ຜາໄຊ"],
+      "ວຽງຈັນ": ["ໂພນໂຮງ", "ທຸລະຄົມ", "ແກ້ວອຸດົມ", "ກາສີ", "ວັງວຽງ", "ເຟືອງ", "ຊະນະຄາມ", "ແມດ", "ວຽງຄຳ", "ຫີນເຫີບ", "ໝື່ນ"],
+      "ບໍລິຄຳໄຊ": ["ປາກຊັນ", "ທ່າພະບາດ", "ປາກກະດິງ", "ບໍລິຄັນ", "ຄຳເກີດ", "ວຽງທອງ", "ໄຊຈຳພອນ"],
+      "ຄຳມ່ວນ": ["ທ່າແຂກ", "ມະຫາໄຊ", "ໜອງບົກ", "ຫີນບູນ", "ຍົມມະລາດ", "ບົວລະພາ", "ນາກາຍ", "ເຊບັ້ງໄຟ", "ໄຊບົວທອງ", "ຄູນຄຳ"],
+      "ສະຫວັນນະເຂດ": ["ໄກສອນ ພົມວິຫານ", "ອຸທຸມພອນ", "ອາດສະພັງທອງ", "ພີນ", "ເຊໂປນ", "ນອງ", "ທ່າປາງທອງ", "ສອງຄອນ", "ຈຳພອນ", "ຊົນນະບູລີ", "ໄຊບູລີ", "ວີລະບຸລີ", "ອາດສະພອນ", "ໄຊພູທອງ", "ພະລານໄຊ"],
+      "ສາລະວັນ": ["ສາລະວັນ", "ຕະໂອ້ຍ", "ຕຸ້ມລານ", "ລະຄອນເພັງ", "ວາປີ", "ຄົງເຊໂດນ", "ສະໝ້ວຍ"],
+      "ເຊກອງ": ["ລະມາມ", "ກະລຶມ", "ດາກຈຶງ", "ທ່າແຕງ"],
+      "ຈຳປາສັກ": ["ປາກເຊ", "ຊະນະສົມບູນ", "ບາຈຽງຈະເລີນສຸກ", "ປາກຊ່ອງ", "ປະທຸມພອນ", "ໂພນທອງ", "ຈຳປາສັກ", "ສຸຂຸມາ", "ມູນລະປາໂມກ", "ໂຂງ"],
+      "ອັດຕະປື": ["ໄຊເສດຖา", "ສາມັກຄີໄຊ", "ສະໜາມໄຊ", "ຊານໄຊ", "ພູວົງ"],
+      "ໄຊສົມບູນ": ["ອະນຸວົງ", "ລ້ອງຊານ", "ລ້ອງແຈ້ງ", "ທ່າໂທມ", "ຮົ່ມ"]
+    };
+
+    function updateDistricts() {
+      var provSelect = document.getElementById('cust-province');
+      var distSelect = document.getElementById('cust-district');
+      var selectedProv = provSelect.value;
+      
+      distSelect.innerHTML = '<option value="" disabled selected>-- ເລືອກເມືອງ --</option>'; 
+      
+      if (selectedProv && laoDistricts[selectedProv]) {
+        var districts = laoDistricts[selectedProv];
+        for (var i = 0; i < districts.length; i++) {
+          distSelect.innerHTML += '<option value="' + districts[i] + '">' + districts[i] + '</option>';
+        }
+        distSelect.disabled = false; 
+      } else {
+        distSelect.disabled = true; 
+      }
+    }
+
+    function renderCart() {
+      globalCart = JSON.parse(localStorage.getItem('savage_cart')) || [];
+      var container = document.getElementById('cart-items-list');
+      var formSection = document.getElementById('customer-info-section');
+      var summaryBar = document.getElementById('summary-bar');
+      
+      if (globalCart.length === 0) {
+        container.innerHTML = `
+          <div class="empty-cart">
+            <span class="material-icons-outlined">shopping_cart</span>
+            <p>ບໍ່ມີສິນຄ້າໃນກະຕ່າໃນຂະນະນີ້</p>
+            <a href="<?= getScriptUrl() ?>?page=home" class="btn-go-home">GO SHOPPING</a>
+          </div>
+        `;
+        formSection.style.display = 'none';
+        summaryBar.style.display = 'none';
+        return;
+      }
+
+      formSection.style.display = 'block';
+      summaryBar.style.display = 'block';
+      container.innerHTML = '';
+
+      var grandTotal = 0;
+
+      for (var i = 0; i < globalCart.length; i++) {
+        var item = globalCart[i];
+        var itemSubtotal = item.price * item.qty;
+        grandTotal += itemSubtotal;
+
+        var itemHtml = `
+          <div class="cart-item">
+            <img src="${item.img}" class="item-img" onerror="this.src='https://via.placeholder.com/55?text=No+Image'">
+            <div class="item-details">
+              <div class="item-name">${item.name}</div>
+              <div class="item-price">${item.price.toLocaleString()} ₭</div>
+              
+              <div class="qty-controls">
+                <button class="qty-btn" onclick="updateQty('${item.id}', -1)"><span class="material-icons-outlined">remove</span></button>
+                <span class="qty-num">${item.qty}</span>
+                <button class="qty-btn" onclick="updateQty('${item.id}', 1)"><span class="material-icons-outlined">add</span></button>
+              </div>
+            </div>
+            
+            <button class="btn-delete" onclick="removeCartItem('${item.id}')">
+              <span class="material-icons-outlined">delete_outline</span>
+            </button>
+          </div>
+        `;
+        container.innerHTML += itemHtml;
+      }
+
+      document.getElementById('cart-grand-total').innerText = grandTotal.toLocaleString() + ' ₭';
+    }
+
+    function updateQty(id, delta) {
+      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
+      var item = cart.find(function(c) { return c.id === id; });
+      if (item) {
+        item.qty += delta;
+        if (item.qty < 1) item.qty = 1;
+        localStorage.setItem('savage_cart', JSON.stringify(cart));
+        renderCart();
+      }
+    }
+
+    function removeCartItem(id) {
+      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
+      var updatedCart = cart.filter(function(c) { return c.id !== id; });
+      localStorage.setItem('savage_cart', JSON.stringify(updatedCart));
+      renderCart();
+    }
+
+    function sendOrderViaWhatsApp() {
+      var name = document.getElementById('cust-name').value.trim();
+      var phone = document.getElementById('cust-phone').value.trim();
+      var shippingComp = document.getElementById('cust-shipping-comp').value;
+      var shippingBranch = document.getElementById('cust-shipping-branch').value.trim();
+      var province = document.getElementById('cust-province').value;
+      var districtElem = document.getElementById('cust-district');
+      var district = districtElem ? districtElem.value : "";
+      var paymentMethod = document.getElementById('cust-payment-method').value;
+
+      if (!name || !phone || !shippingComp || !shippingBranch || !district || !province) {
+        alert('ກະລຸນາກອກຂໍ້ມູນຜູ້ຊື້ ແລະ ເລືອກລາຍລະອຽດການຈັດສົ່ງໃຫ້ຄົບຖ້ວນ!');
+        return;
+      }
+
+      var checkoutBtn = document.getElementById('btn-submit-order') || document.querySelector('.summary-bar button') || document.querySelector('button[onclick="sendOrderViaWhatsApp()"]');
+      if (checkoutBtn) {
+        checkoutBtn.disabled = true;
+        checkoutBtn.innerHTML = '<span class="material-icons-outlined">sync</span> ກຳລັງບັນທຶກຂໍ້ມູນ...';
+      }
+
+      var grandTotal = 0;
+      var detailsArray = [];
+      for (var i = 0; i < globalCart.length; i++) { 
+        var item = globalCart[i];
+        detailsArray.push(item.qty + "x " + item.name);
+        grandTotal += (item.price * item.qty); 
+      }
+      var orderDetailsText = detailsArray.join(", ");
+
+      var orderData = {
+        cartItems: globalCart,
+        orderDetails: orderDetailsText,
+        totalPrice: grandTotal,
+        name: name,
+        phone: phone,
+        express: shippingComp,
+        address: shippingBranch,
+        provinces: province,
+        district: district,
+        paymentMethod: paymentMethod
+      };
+
+      submitOrderToServer(orderData, checkoutBtn);
+    }
+
+    function submitOrderToServer(orderData, checkoutBtn) {
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.success) {
+            var generatedId = response.orderId; 
+
+            var textMessage = "🏁 *ໃບສັ່ງຊື້ສິນຄ້າຈາກ SAVAGE SHOP* 🏁\n";
+            textMessage += "🆔 *Order ID:* `" + generatedId + "`\n";
+            textMessage += "--------------------------------------\n";
+            textMessage += "👤 *ຂໍ້ມູນຜູ້ສັ່ງຊື້ ແລະ ການຈັດສົ່ງ:*\n";
+            textMessage += "• ຊື່: " + orderData.name + "\n";
+            textMessage += "• ເບີໂທ: " + orderData.phone + "\n";
+            textMessage += "• ບໍລິສັດຂົນສົ່ງ: " + orderData.express + "\n";
+            textMessage += "• ສາຂາ: " + orderData.address + "\n";
+            textMessage += "• ເມືອງ: " + orderData.district + "\n";
+            textMessage += "• ແຂວງ: " + orderData.provinces + "\n";
+            textMessage += "• ວິທີການຈ່າຍ: *" + orderData.paymentMethod + "*\n";
+            textMessage += "--------------------------------------\n";
+            textMessage += "📦 *...ລາຍການສິນຄ້າ...*\n";
+
+            for (var i = 0; i < globalCart.length; i++) {
+              var item = globalCart[i];
+              var subtotal = item.price * item.qty;
+              textMessage += (i + 1) + ". " + item.name + "\n";
+              textMessage += "   ຈຳນວນ: " + item.qty + " x " + item.price.toLocaleString() + " ₭\n";
+              textMessage += "   ລວມ: " + subtotal.toLocaleString() + " ₭\n";
+            }
+            textMessage += "--------------------------------------\n";
+            textMessage += "💰 *ຍອດລວມທັງໝົດ (TOTAL):* *" + orderData.totalPrice.toLocaleString() + " ₭*\n";
+            textMessage += "--------------------------------------\n";
+            textMessage += "⚡ _ກະລຸນາລໍຖ້າແອດມິນກວດສອບສະຕັອກ ແລະ ແຈ້ງຍອດໂອນ ເພື່ອຢືນຢັນການສັ່ງຊື້_";
+
+            var orderHistory = JSON.parse(localStorage.getItem('savage_orders')) || [];
+            orderHistory.unshift({ 
+              orderId: generatedId, 
+              date: new Date().toLocaleString('lo-LA'), 
+              items: globalCart, 
+              total: orderData.totalPrice, 
+              status: 'ລໍຖ້າກວດສອບ' 
+            });
+            localStorage.setItem('savage_orders', JSON.stringify(orderHistory));
+
+            var whatsappUrl = "https://wa.me/8562077912526?text=" + encodeURIComponent(textMessage);
+            
+            document.getElementById('display-order-id').innerText = generatedId;
+            document.getElementById('success-modal').style.display = 'flex';
+            
+            document.getElementById('btn-go-wa').onclick = function() {
+              window.open(whatsappUrl, '_blank');
+            };
+
+            localStorage.removeItem('savage_cart');
+            renderCart();
+            if (typeof updateCartBadge === "function") updateCartBadge();
+
+            window.open(whatsappUrl, '_blank');
+            
+          } else {
+            alert('เกิดข้อผิดพลาด: ' + response.message);
+            if (checkoutBtn) { checkoutBtn.disabled = false; checkoutBtn.innerHTML = 'SEND ORDER TO WHATSAPP'; }
+          }
+        })
+        .withFailureHandler(function(err) {
+          alert('ระบบขัดข้องกรุณาลองใหม่: ' + err.toString());
+          if (checkoutBtn) { checkoutBtn.disabled = false; checkoutBtn.innerHTML = 'SEND ORDER TO WHATSAPP'; }
+        })
+        .saveOrderToSheet(orderData); 
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('success-modal').style.display = 'none';
+      window.top.location.href = '<?= getScriptUrl() ?>?page=home';
+    }
+
+    renderCart();
+    autoFillProfile(); 
+
+    function updateCartBadge() {
+      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
+      var headerBadge = document.getElementById('cart-badge'); 
+      
+      if (cart.length > 0) {
+        var totalQty = 0;
+        for (var i = 0; i < cart.length; i++) { totalQty += cart[i].qty; }
+        if (headerBadge) { headerBadge.innerText = totalQty; headerBadge.style.display = 'block'; }
+      } else {
+        if (headerBadge) headerBadge.style.display = 'none';
+      }
+    }
+    
+    updateCartBadge();
+  </script>
+</body>
+</html>

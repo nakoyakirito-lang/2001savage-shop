@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans Lao', 'Montserrat', sans-serif; }
+    body { background-color: #f0f2f5; color: #111; height: 100vh; display: flex; overflow: hidden; }
+    
+    /* ================= เมนูด้านข้าง ================= */
+    .app-sidebar { width: 80px; background: #111; display: flex; flex-direction: column; align-items: center; padding-top: 20px; z-index: 10; }
+    .sidebar-logo { font-weight: 900; font-size: 0.85rem; text-align: center; margin-bottom: 40px; color: #fff; letter-spacing: -0.5px; line-height: 1.2; }
+    .menu-btn { width: 54px; height: 54px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; margin-bottom: 20px; cursor: pointer; transition: 0.2s; gap: 4px; }
+    .menu-btn span { font-size: 0.55rem; font-weight: 800; }
+    .menu-btn .material-icons-outlined { font-size: 22px; }
+    .menu-btn:hover { color: #fff; background: #222; }
+    .menu-btn.active { background: #fff; color: #111; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+    /* ================= ส่วนแสดงเนื้อหาหลัก ================= */
+    .app-body { flex: 1; height: 100vh; display: flex; flex-direction: column; overflow-y: auto; padding: 15px; padding-bottom: 40px; }
+    
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #111; color: white; padding: 12px 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .header h1 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 8px; text-transform: uppercase;}
+
+    /* ฟอร์มแบบย่อส่วน */
+    .form-container { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); max-width: 500px; margin: 0 auto; width: 100%; border: 1px solid #eee; }
+    .form-container datalist { display: none; }
+    .form-title { font-weight: 900; font-size: 0.85rem; margin-bottom: 15px; border-bottom: 2px solid #111; padding-bottom: 8px; display: flex; align-items: center; gap: 6px; color: #111;}
+    
+    .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .input-group { flex: 1; display: flex; flex-direction: column; margin-bottom: 12px;}
+    .input-group label { font-size: 0.65rem; font-weight: 800; color: #555; margin-bottom: 4px; text-transform: uppercase; }
+    .input-group input, .input-group select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.8rem; font-weight: 600; outline: none; transition: 0.2s; background: #fdfdfd; width: 100%;}
+    .input-group input:focus { border-color: #111; background: #fff; box-shadow: 0 0 0 2px rgba(17,17,17,0.05); }
+
+    /* กล่องราคาและอัปโหลดรูป */
+    .price-box { border: 1px dashed #ccc; padding: 12px; border-radius: 8px; background: #fafafa; margin-bottom: 12px; }
+    .upload-box { border: 1px solid #e0e0e0; padding: 12px; border-radius: 8px; background: #fff; margin-bottom: 12px; }
+    .upload-desc { font-size: 0.6rem; color: #888; margin-top: 4px; font-weight: 600; }
+    
+    .btn-submit { background: #111; color: white; border: none; padding: 14px; width: 100%; border-radius: 25px; font-weight: 900; font-size: 0.85rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+    .btn-submit:hover { background: #00e676; color: #111; }
+
+    /* Modal Styles */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 15px;}
+    .modal-content { background: #fff; padding: 25px 20px; border-radius: 12px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); animation: popIn 0.3s ease; }
+    @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- Login Overlay -->
+  <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
+    <h2 style="margin-bottom: 20px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px;">SAVAGE SHOP</h2>
+    <div style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <h3 style="color: #111; margin-bottom: 20px; text-align: center; font-weight: 900;">ເຂົ້າສູ່ລະບົບ</h3>
+      <div style="margin-bottom: 15px;">
+        <label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Username</label>
+        <input type="text" id="loginUser" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-weight: 600; color: #111; background: #f9f9f9;">
+      </div>
+      <div style="margin-bottom: 20px;">
+        <label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Password</label>
+        <input type="password" id="loginPass" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-weight: 600; color: #111; background: #f9f9f9;">
+      </div>
+      <button onclick="checkLogin()" style="width: 100%; padding: 14px; background: #00e676; color: #111; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 1rem; text-transform: uppercase;">Login</button>
+      <p id="loginError" style="color: red; font-size: 0.8rem; font-weight: bold; text-align: center; margin-top: 15px; display: none;">❌ Username ຫຼື Password ບໍ່ຖືກຕ້ອງ!</p>
+    </div>
+  </div>
+
+  <div class="app-sidebar">
+    <div class="sidebar-logo">SAVAGE<br>SHOP</div>
+    <div class="menu-btn" onclick="linkToPage('dashboard')"><span class="material-icons-outlined">dashboard</span><span>ພາບລວມ</span></div>
+    <div class="menu-btn" onclick="linkToPage('admin')">
+      <div class="sidebar-badge" id="nav-badge-pending">0</div>
+      <span class="material-icons-outlined">receipt_long</span><span>ອໍເດີ້</span>
+    </div>
+    <div class="menu-btn" onclick="linkToPage('pos')"><span class="material-icons-outlined">point_of_sale</span><span>POS ບິນ</span></div>
+    <div class="menu-btn" onclick="linkToPage('stock_check')"><span class="material-icons-outlined">inventory</span><span>ສະຕັອກ</span></div>
+    <div class="menu-btn" onclick="linkToPage('stock_in')"><span class="material-icons-outlined">inventory_2</span><span>ສັ່ງຂອງ(PO)</span></div>
+    <div class="menu-btn" onclick="linkToPage('finance')"><span class="material-icons-outlined">money_off</span><span>ລາຍຈ່າຍ</span></div>
+    <div class="menu-btn active" onclick="linkToPage('product_manage')"><span class="material-icons-outlined">add_box</span><span>ສິນຄ້າໃໝ່</span></div>
+    
+    <div class="menu-btn" onclick="logoutSavage()" style="margin-top: 30px; color: #ff3d00;">
+      <span class="material-icons-outlined">logout</span><span>ອອກລະບົບ</span>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <div class="header">
+      <h1><span class="material-icons-outlined">add_box</span> ເພີ່ມສິນຄ້າໃໝ่ (Master Data)</h1>
+    </div>
+
+    <div class="form-container">
+      <div class="form-title"><span class="material-icons-outlined">description</span> ຂໍ້ມູນທົ່ວໄປຂອງສິນຄ້າ</div>
+      
+      <div class="input-row" style="margin-bottom:0;">
+        <div class="input-group">
+          <label>ລະຫັດສິນຄ້າ (Product ID)</label>
+          <input type="text" id="p-id" placeholder="ປະຫວ່າງໄວ້ເພື່ອສ້າງອັດຕະໂນມັດ">
+        </div>
+        <div class="input-group">
+          <label>ໝວດໝູ່ (Group) *</label>
+          <!-- เปลี่ยนเป็น input + datalist ดึงข้อมูลมาแสดงเป็น Dropdown -->
+          <input type="text" id="p-group" list="groupList" placeholder="ເລືອກ ຫຼື ພິມໃໝ່...">
+          <datalist id="groupList"></datalist>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>ຊື່ສິນຄ້າ (Product Name) *</label>
+        <input type="text" id="p-name" placeholder="ຕົວຢ່າງ: ຄີ້ວໜ້າຄาບອນ PCX160 21-24">
+      </div>
+
+      <div class="input-group">
+        <label>ລຸ້ນລົດທີ່ໃສ່ໄດ້ (Moto Model) *</label>
+        <!-- เปลี่ยนเป็น input + datalist ดึงข้อมูลมาแสดงเป็น Dropdown -->
+        <input type="text" id="p-model" list="modelList" placeholder="ເລືອກ ຫຼື ພິມໃໝ່ (PCX160)...">
+        <datalist id="modelList"></datalist>
+      </div>
+
+      <div class="price-box">
+        <div class="form-title" style="font-size: 0.8rem; border: none; margin-bottom: 8px; color: #444;"><span class="material-icons-outlined" style="font-size:16px;">payments</span> ຂໍ້ມູນລາຄາ (ສະກຸນເງິນ ₭ ຫຼື ฿)</div>
+        <div class="input-row" style="margin-bottom: 0;">
+          <div class="input-group" style="margin-bottom:0;">
+            <label>ລາຄາຕົ້ນທຶນ (Cost) *</label>
+            <input type="number" id="p-cost" placeholder="0" style="border: 2px solid #ff9800; font-weight:900;">
+          </div>
+          <div class="input-group" style="margin-bottom:0;">
+            <label>ລາຄາຂາຍ (Sell) *</label>
+            <input type="number" id="p-price" placeholder="0" style="border: 2px solid #00e676; font-weight:900;">
+          </div>
+        </div>
+      </div>
+
+      <!-- กล่องอัปโหลดรูปภาพ -->
+      <div class="upload-box">
+        <div class="input-group" style="margin-bottom:8px;">
+          <label><span class="material-icons-outlined" style="font-size:14px; vertical-align:middle;">image</span> 1. ຮູບພາບຫຼັກ (Main Image)</label>
+          <input type="file" id="p-image" accept="image/*" style="background: white; padding: 6px; cursor: pointer; border: 1px solid #ccc; font-size:0.7rem;">
+          <div class="upload-desc">* ຮູບພາບໜ້າປົກ 1 ຮູບ</div>
+        </div>
+        
+        <div class="input-group" style="margin-bottom:0;">
+          <label><span class="material-icons-outlined" style="font-size:14px; vertical-align:middle;">photo_library</span> 2. ຮູບພາບແກລເລີຣີ (Gallery & Reviews)</label>
+          <input type="file" id="p-gallery" accept="image/*" multiple style="background: white; padding: 6px; cursor: pointer; border: 1px dashed #1565c0; font-size:0.7rem;">
+          <div class="upload-desc" style="color:#1565c0;">* ເລືອກໄດ້ຫຼາຍຮູບ (ອັບໂຫຼດລີວິວ ຫຼື ຮູບຕອນຕິດຕັ້ງ)</div>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btn-save" onclick="submitProduct()">
+        <span class="material-icons-outlined">save</span> ບັນທຶກສິນຄ້າເຂົ້າລະບົບ
+      </button>
+    </div>
+  </div>
+
+  <div class="modal" id="successModalProd">
+    <div class="modal-content">
+      <span class="material-icons-outlined" style="font-size: 50px; color: #00e676;">check_circle</span>
+      <h2 style="margin: 10px 0; font-family:'Montserrat', sans-serif; font-weight:900; font-size:1.2rem;">ບັນທຶກສຳເລັດ!</h2>
+      <p style="color: #666; font-size: 0.75rem; margin-bottom: 20px;">ສິນຄ້າໃໝ່ຖືກເພີ່ມເຂົ້າຖານຂໍ້ມູນແລ້ວ<br>ລະຫັດ: <strong id="showNewId" style="color:#111;"></strong></p>
+      
+      <button onclick="resetFormProd()" style="width: 100%; padding: 10px; background: #111; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size:0.8rem;">ເພີ່ມສິນຄ້າອື່ນຕໍ່</button>
+      <button onclick="document.getElementById('successModalProd').style.display='none'" style="width: 100%; padding: 10px; background: #eee; color: #333; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size:0.8rem;">ປິດໜ້າຕ່າງ</button>
+    </div>
+  </div>
+
+  <script>
+    function linkToPage(pageName) { google.script.run.withSuccessHandler(function(url) { window.top.location.href = url + '?page=' + pageName; }).getScriptUrl(); }
+    
+    function checkAuth() {
+      if (localStorage.getItem('savage_auth') === 'true') {
+        document.getElementById('loginOverlay').style.display = 'none';
+        loadDropdownData(); // ดึงข้อมูล Dropdown ทันทีที่เข้าสู่ระบบผ่าน
+      } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+      }
+    }
+    
+    function checkLogin() {
+      var u = document.getElementById('loginUser').value;
+      var p = document.getElementById('loginPass').value;
+      if (u === 'savage' && p === '112233') {
+        localStorage.setItem('savage_auth', 'true');
+        checkAuth();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+    
+    function logoutSavage() { localStorage.removeItem('savage_auth'); location.reload(); }
+    window.onload = function() { checkAuth(); };
+
+    // 🌟 ดึงข้อมูล Group และ Model มาใส่ใน Dropdown
+    function loadDropdownData() {
+      google.script.run.withSuccessHandler(function(data) {
+        let gList = document.getElementById('groupList');
+        let mList = document.getElementById('modelList');
+        gList.innerHTML = ''; mList.innerHTML = '';
+        
+        data.groups.forEach(g => { gList.innerHTML += `<option value="${g}">`; });
+        data.models.forEach(m => { mList.innerHTML += `<option value="${m}">`; });
+      }).getFormDropdownData();
+    }
+
+    // ฟังก์ชันช่วยอ่านไฟล์รูปเป็น Base64
+    function readFileAsBase64(file) {
+      return new Promise((resolve) => {
+        let reader = new FileReader();
+        reader.onload = e => resolve(e.target.result.split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 🌟 ฟังก์ชันบันทึกข้อมูล (อัปเกรดให้รองรับแกลเลอรี่หลายรูป)
+    async function submitProduct() {
+      let productId = document.getElementById('p-id').value;
+      let group = document.getElementById('p-group').value.trim();
+      let name = document.getElementById('p-name').value.trim();
+      let model = document.getElementById('p-model').value.trim();
+      let costPrice = document.getElementById('p-cost').value;
+      let sellPrice = document.getElementById('p-price').value;
+      
+      let mainInput = document.getElementById('p-image');
+      let galleryInput = document.getElementById('p-gallery');
+
+      if (!group || !name || !model || !costPrice || !sellPrice) {
+        alert('ກະລຸນາປ້ອນຂໍ້ມູນທີ່ມີເຄື່ອງໝາຍ * ໃຫ້ຄົບຖ້ວນ!');
+        return;
+      }
+
+      let btn = document.getElementById('btn-save'); 
+      btn.innerHTML = '<span class="material-icons-outlined" style="animation: spin 1s linear infinite;">sync</span> ກຳລັງບັນທຶກ ແລະ ອັບໂຫຼດຮູບ...';
+      btn.disabled = true;
+
+      let productData = {
+        productId: productId,
+        group: group,
+        productName: name,
+        motoModel: model,
+        costPrice: parseFloat(costPrice),
+        sellPrice: parseFloat(sellPrice),
+        gallery: [] // ตัวแปรเก็บรูปแกลเลอรี่
+      };
+
+      // 1. อ่านรูปหลัก
+      if (mainInput.files.length > 0) {
+        let file = mainInput.files[0];
+        productData.imageBase64 = await readFileAsBase64(file);
+        productData.imageMimeType = file.type;
+        productData.imageName = file.name;
+      } else {
+        productData.imageUrl = "";
+      }
+
+      // 2. อ่านรูปแกลเลอรี่หลายรูป
+      if (galleryInput.files.length > 0) {
+        for (let i = 0; i < galleryInput.files.length; i++) {
+          let gf = galleryInput.files[i];
+          let b64 = await readFileAsBase64(gf);
+          productData.gallery.push({ base64: b64, mimeType: gf.type, name: gf.name });
+        }
+      }
+
+      // ส่งข้อมูลไปหลังบ้าน
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if(res.success) {
+            document.getElementById('showNewId').innerText = res.productId;
+            document.getElementById('successModalProd').style.display = 'flex';
+          } else {
+            alert('ເກີດຂໍ້ຜິດພາດ: ' + res.message);
+          }
+          btn.innerHTML = '<span class="material-icons-outlined">save</span> ບັນທຶກສິນຄ້າເຂົ້າລະບົບ';
+          btn.disabled = false;
+        })
+        .withFailureHandler(function(error) {
+          alert('System Error: ' + error.message);
+          btn.innerHTML = '<span class="material-icons-outlined">save</span> ບັນທຶກສິນຄ້າເຂົ້າລະບົບ';
+          btn.disabled = false;
+        })
+        .saveNewProductWithGallery(productData); // เรียกใช้ฟังก์ชันใหม่หลังบ้าน
+    }
+
+    function resetFormProd() {
+      document.getElementById('p-id').value = '';
+      document.getElementById('p-name').value = '';
+      document.getElementById('p-cost').value = '';
+      document.getElementById('p-price').value = '';
+      document.getElementById('p-image').value = '';
+      document.getElementById('p-gallery').value = '';
+      // Group และ Model ไม่ลบ เผื่อจะเพิ่มสินค้าหมวดหมู่เดิมต่อ
+      document.getElementById('successModalProd').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans Lao', 'Montserrat', sans-serif; }
+    body { background-color: #f0f2f5; color: #111; height: 100vh; display: flex; overflow: hidden; }
+    
+    /* ================= เมนูด้านข้าง ================= */
+    .app-sidebar { width: 80px; background: #111; display: flex; flex-direction: column; align-items: center; padding-top: 20px; z-index: 10; }
+    .sidebar-logo { font-weight: 900; font-size: 0.85rem; text-align: center; margin-bottom: 40px; color: #fff; letter-spacing: -0.5px; line-height: 1.2; }
+    .menu-btn { position: relative; width: 54px; height: 54px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; margin-bottom: 20px; cursor: pointer; transition: 0.2s; gap: 4px; }
+    .menu-btn span { font-size: 0.55rem; font-weight: 800; }
+    .menu-btn .material-icons-outlined { font-size: 22px; }
+    .menu-btn:hover { color: #fff; background: #222; }
+    .menu-btn.active { background: #fff; color: #111; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    .sidebar-badge { position: absolute; top: -6px; right: -6px; background: #ff3d00; color: white; border-radius: 20px; min-width: 20px; height: 20px; padding: 0 5px; font-size: 11px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 100; display: none; }
+
+    /* ================= ส่วนแสดงเนื้อหาหลัก ================= */
+    .app-body { flex: 1; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .page-view { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; } 
+    
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #111; color: white; padding: 15px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .header h1 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.2rem; letter-spacing: 1px; margin: 0; display: flex; align-items: center; gap: 10px; }
+
+    .pos-products-side { flex: 1.5; display: flex; flex-direction: column; background: #fdfdfd; border-radius: 16px; border: 1px solid #eee; overflow: hidden; }
+    .pos-top-bar { padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; background: white; gap: 10px; flex-wrap: wrap;}
+    .pos-search-box { flex: 1; display: flex; align-items: center; background: #f0f2f5; padding: 8px 15px; border-radius: 8px; border: 1px solid #eee; min-width: 200px;}
+    .pos-search-box input { border: none; background: transparent; outline: none; width: 100%; font-size: 0.85rem; margin-left: 10px; font-weight: 600;}
+    select.group-filter { padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; background: #111; color: #fff; font-weight: 700; font-size: 0.8rem; outline: none; cursor: pointer; }
+    .pos-scroll-area { flex: 1; overflow-y: auto; padding: 15px; }
+    .pos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    .pos-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; position: relative;}
+    .pos-card:hover { border-color: #1565c0; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .pos-img-box { height: 90px; background: #f7f7f7; border-radius: 6px; margin-bottom: 8px; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+    .pos-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .pos-title { font-size: 0.75rem; font-weight: 700; line-height: 1.3; margin-bottom: 4px; color: #333; height: 28px; overflow: hidden; }
+    .pos-card-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; border-top: 1px dashed #eee; padding-top: 8px;}
+    .pos-btn-add { background: #1565c0; color: #fff; border: none; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 1.1rem; display:flex; align-items:center; justify-content:center;}
+
+    .po-layout { display: flex; flex: 1; gap: 15px; padding: 0 20px 20px 20px; overflow: hidden; }
+    .po-right { flex: 1; background: white; border-radius: 16px; padding: 20px; border: 1px solid #eee; display: flex; flex-direction: column; overflow-y: auto; }
+    
+    .input-group { display: flex; flex-direction: column; margin-bottom: 12px;}
+    .input-group label { font-size: 0.75rem; font-weight: 800; margin-bottom: 5px; color: #555; text-transform: uppercase;}
+    .input-group input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-weight: 600; outline: none; }
+    
+    table.po-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 5px;}
+    table.po-table th { background: #111; color: white; padding: 8px; text-align: left; white-space: nowrap;}
+    table.po-table td { padding: 8px 4px; border-bottom: 1px solid #eee; vertical-align: middle; }
+    .po-input-small { width: 50px; padding: 6px 2px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold;}
+    
+    .po-input-price { width: 115px; padding: 8px 4px; border: 2px solid #64b5f6; border-radius: 6px; text-align: center; font-weight: 900; font-size: 0.9rem; color: #1565c0; font-family: 'Montserrat', sans-serif; outline: none; transition: 0.2s;}
+    .po-input-price:focus { border-color: #1565c0; background: #e3f2fd; }
+
+    .po-summary-box { background: #e3f2fd; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #90caf9; }
+    .po-summary-row { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; font-size: 0.85rem;}
+    .po-summary-row.total { font-size: 1.1rem; color: #1565c0; border-top: 2px dashed #90caf9; padding-top: 5px; margin-top: 5px;}
+    
+    .btn-action-po { padding: 12px; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; width: 100%; display: flex; justify-content: center; align-items: center; gap: 5px; transition: 0.2s;}
+    .btn-action-po:hover { opacity: 0.9; }
+    .btn-po-pending { background: #ff9800; color: white; }
+    .btn-po-receive { background: #00e676; color: #111; }
+    .btn-po-nav { background: #fff; color: #1565c0; border: none; padding: 8px 15px; border-radius: 8px; cursor:pointer; font-weight:bold; font-size:0.8rem; display:inline-flex; align-items:center; gap:5px;}
+
+    .status-tabs { display: flex; background: white; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; overflow: hidden;}
+    .tab-btn { flex: 1; background: none; border: none; padding: 12px; font-weight: 800; font-size: 0.85rem; color: #888; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.3s; }
+    .tab-btn.active { color: #111; border-bottom: 3px solid #111; background: #fdfdfd;}
+
+    .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 15px; }
+    .dash-card { background: white; padding: 15px 10px; border-radius: 12px; text-align: center; border-bottom: 4px solid #ff9800; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .dash-card.ready { border-bottom-color: #00e676; }
+    .dash-title { font-size: 0.7rem; color: #666; font-weight: 800; margin-bottom: 5px; }
+    .dash-value { font-size: 1.6rem; font-weight: 900; color: #111; }
+    .order-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; }
+    .loading { text-align: center; padding: 50px; color: #666; font-weight: 700; }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 600px; max-width: 95vw; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
+    <h2 style="margin-bottom: 20px; font-weight: 900; letter-spacing: 2px;">SAVAGE SHOP</h2>
+    <div style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px;">
+      <h3 style="color: #111; margin-bottom: 20px; text-align: center; font-weight: 900;">ເຂົ້າສູ່ລະບົບ (Stock In)</h3>
+      <div style="margin-bottom: 15px;"><input type="text" id="loginUser" placeholder="Username" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;"></div>
+      <div style="margin-bottom: 20px;"><input type="password" id="loginPass" placeholder="Password" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;"></div>
+      <button onclick="checkLogin()" style="width: 100%; padding: 14px; background: #00e676; color: #111; border: none; border-radius: 8px; font-weight: 900; cursor: pointer;">Login</button>
+      <p id="loginError" style="color: red; font-size: 0.8rem; font-weight: bold; text-align: center; margin-top: 15px; display: none;">❌ Username ຫຼື Password ບໍ່ຖືກຕ້ອງ!</p>
+    </div>
+  </div>
+
+<div class="app-sidebar">
+    <div class="sidebar-logo">SAVAGE<br>SHOP</div>
+    <div class="menu-btn" onclick="linkToPage('dashboard')"><span class="material-icons-outlined">dashboard</span><span>ພາບລວມ</span></div>
+    <div class="menu-btn" onclick="linkToPage('admin')">
+      <div class="sidebar-badge" id="nav-badge-pending">0</div>
+      <span class="material-icons-outlined">receipt_long</span><span>ອໍເດີ້</span>
+    </div>
+    <div class="menu-btn" onclick="linkToPage('pos')"><span class="material-icons-outlined">point_of_sale</span><span>POS ບิน</span></div>
+    <div class="menu-btn" onclick="linkToPage('stock_check')"><span class="material-icons-outlined">inventory</span><span>ສະຕັອກ</span></div>
+    <div class="menu-btn active" onclick="linkToPage('stock_in')"><span class="material-icons-outlined">inventory_2</span><span>ສັ່ງຂອງ(PO)</span></div>
+    <div class="menu-btn" onclick="linkToPage('finance')"><span class="material-icons-outlined">money_off</span><span>ລາຍຈ່າຍ</span></div>
+    <div class="menu-btn" onclick="linkToPage('product_manage')"><span class="material-icons-outlined">add_box</span><span>ສິນຄ້າໃໝ່</span></div>
+    
+    <div class="menu-btn" onclick="logoutSavage()" style="margin-top: 30px; color: #ff3d00;">
+      <span class="material-icons-outlined">logout</span><span>ອອກລະບົບ</span>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <div id="tab-po-form" style="display: flex; flex-direction: column; height: 100%;">
+      <div style="padding: 20px 20px 0 20px;">
+        <div class="header" style="background: #1565c0;">
+          <h1><span class="material-icons-outlined">inventory_2</span> ລະບົບສັ່ງຊື้ສິນຄ້າເຂົ້າຮ້ານ (PO)</h1>
+          <button class="btn-po-nav" onclick="switchTab('history')"><span class="material-icons-outlined">history</span> ປະຫວັດບິນສັ່ງຊື້</button>
+        </div>
+      </div>
+
+      <div class="po-layout">
+        <div class="pos-products-side">
+          <div class="pos-top-bar">
+            <div class="pos-search-box">
+              <span class="material-icons-outlined" style="color:#999;">search</span>
+              <input type="text" id="stockSearchInput" placeholder="ຄົ້ນຫາຊື່ ຫຼື ລະຫັດ..." onkeyup="applyStockFilters()">
+            </div>
+            <select id="stockCategorySelect" class="group-filter" onchange="applyStockFilters()"><option value="ALL">ທຸກໝວດໝູ່ (Categories)</option></select>
+            <select id="stockModelSelect" class="group-filter" onchange="applyStockFilters()"><option value="ALL">ທຸກລຸ້ນລົດ (Models)</option></select>
+          </div>
+          <div class="pos-scroll-area">
+            <div id="stock-loader" class="loading"><span class="material-icons-outlined" style="animation: spin 1s linear infinite; font-size:40px;">sync</span><br>ກຳລັງໂຫຼດສິນຄ້າ...</div>
+            <div class="pos-grid" id="stockProductGrid"></div>
+          </div>
+        </div>
+
+        <div class="po-right">
+          <h3 style="font-weight:900; margin-bottom:10px; border-bottom:2px solid #111; padding-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span><span class="material-icons-outlined" style="font-size:18px;">shopping_cart</span> ບິນສັ່ງຊື້ (PO)</span>
+            <button class="btn-po-nav" onclick="linkToPage('product_manage')" style="background:#eee; color:#333; padding:4px 8px;"><span class="material-icons-outlined" style="font-size:14px;">add</span> ສ້າງລະຫັດໃໝ່</button>
+          </h3>
+          
+          <div style="flex:1; overflow-y:auto; border:1px solid #eee; border-radius:8px; margin-bottom:10px;">
+            <table class="po-table">
+              <thead><tr><th>ສินຄ້າ</th><th style="text-align:center;">ຈຳນວນ</th><th style="text-align:center;">ທຶນ/ອັນ</th><th style="width: 20px;"></th></tr></thead>
+              <tbody id="poCartTable">
+                <tr><td colspan="4" style="text-align:center; color:#999; padding:20px;">ຍັງບໍ່ມີສິນຄ້າໃນບິນ</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="input-group"><input type="text" id="poSupplier" placeholder="ຊື່ຜູ້ສະໜອງ (Supplier) *" style="background:#f9f9f9;"></div>
+          <div class="input-group" style="background:#fff3e0; padding:10px; border-radius:8px; border:1px solid #ffb74d;">
+            <label style="color:#e65100;">🚚 ຄ່າຂົນສົ່ງລວມຮອບນີ້ (ສຳລັບຫານສະເລ່ຍ)</label>
+            <input type="number" id="poShippingFee" placeholder="0" onkeyup="updatePoCalculations()" onchange="updatePoCalculations()" style="border:2px solid #ff9800; font-size:1rem;">
+          </div>
+          
+          <div class="po-summary-box">
+            <div class="po-summary-row"><span>ຈຳນວນລວມ:</span><span id="poTotalQty">0 ຊິ້ນ</span></div>
+            <div class="po-summary-row total"><span>ລວມຕົ້ນທຶນທັງໝົດ:</span><span id="poGrandTotal">0</span></div>
+          </div>
+          
+          <div>
+            <button class="btn-action-po btn-po-pending" id="btn-save-po" onclick="submitPurchaseOrder('ກຳລັງຂົນສົ່ງ')"><span class="material-icons-outlined">local_shipping</span> ບັນທຶກ (ກຳລັງขົນສົ່ງມາ)</button>
+            <button class="btn-action-po btn-po-receive" id="btn-receive-po" onclick="submitPurchaseOrder('ຮັບເຂົ້າແລ້ວ')"><span class="material-icons-outlined">inventory</span> ຮັບເຄື່ອງທັນທີ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-po-history" style="display: none; flex-direction: column; height: 100%;">
+      <div style="padding: 20px 20px 0 20px;">
+        <div class="header" style="background: #0d47a1;">
+          <h1><span class="material-icons-outlined">history</span> ປະຫວັດບິນສັ່ງຊື້ (PO History)</h1>
+          <button class="btn-po-nav" onclick="switchTab('form')">⬅️ ກັບໄປໜ້າສັ່ງຊື້ໃໝ່</button>
+        </div>
+        
+        <div class="dashboard-grid" style="max-width: 900px; margin: 0 auto; width: 100%;">
+          <div class="dash-card pending"><div class="dash-title">ກຳລັງຂົນສົ່ງ (Pending)</div><div class="dash-value" id="po-count-pending">0</div></div>
+          <div class="dash-card ready"><div class="dash-title">ຮັບເຂົ້າແລ້ວ (Received)</div><div class="dash-value" id="po-count-received">0</div></div>
+        </div>
+
+        <div class="status-tabs" style="max-width: 900px; margin: 0 auto 15px auto; width: 100%;">
+          <button class="tab-btn active" id="tab-all" onclick="filterPoHistory('ALL')">ທັງໝົດ</button>
+          <button class="tab-btn" id="tab-pending" onclick="filterPoHistory('ກຳລັງຂົນສົ່ງ')">ກຳລັງຂົນສົ່ງ (Pending)</button>
+          <button class="tab-btn" id="tab-received" onclick="filterPoHistory('ຮັບເຂົ້າແລ້ວ')">ຮັບເຂົ້າແລ້ວ (Received)</button>
+        </div>
+      </div>
+      
+      <div style="flex: 1; overflow-y: auto; padding: 0 20px 20px 20px; max-width: 900px; margin: 0 auto; width: 100%;" id="po-history-container">
+        <div class="loading"><span class="material-icons-outlined" style="font-size:40px; animation: spin 1s linear infinite;">sync</span><br>ກຳລັງໂຫຼດປະຫວັດ...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="receivePoModal">
+    <div class="modal-content">
+      <h3 style="margin-bottom:15px; border-bottom:2px solid #111; padding-bottom:10px; color:#1565c0; display:flex; align-items:center; gap:8px;">
+        <span class="material-icons-outlined">inventory</span> ຮັບສິນຄ້າ: <span id="recvPoIdDisplay" style="color:#111;"></span>
+      </h3>
+      <div style="display:flex; gap:10px; margin-bottom:15px;">
+        <div class="input-group" style="flex:1; text-align: left; background:#f0f2f5; padding:10px; border-radius:8px; margin-bottom:0;">
+          <label>📅 ວັນທີຮັບເຄື່ອງຈິງ</label>
+          <input type="date" id="recvDateInput" style="border: 1px solid #ccc; font-family:'Montserrat'; padding:8px;">
+        </div>
+        <div class="input-group" style="flex:1; text-align: left; background:#fff3e0; padding:10px; border-radius:8px; margin-bottom:0; border:1px solid #ffb74d;">
+          <label style="color:#e65100;">🚚 ຄ່າຂົນສົ່ງຕົວຈິງ</label>
+          <input type="number" id="recvShippingFee" style="border: 2px solid #ff9800; font-weight:bold; padding:8px;" placeholder="0">
+        </div>
+      </div>
+      <div style="font-size:0.75rem; color:#d32f2f; margin:10px 0; font-weight:bold; text-align:left;">
+        ⚠️ ສາມາດແກ້ໄຂ "ຈຳນວນຮັບຈິງ" ແລະ "ຕົ້ນທຶນ/ອัน" ໄດ້ຖ້າມີການປ່ຽນແປງ
+      </div>
+      <div id="recvItemsContainer" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px;"></div>
+      <div style="display: flex; gap: 10px;">
+        <button onclick="document.getElementById('receivePoModal').style.display='none'" style="flex:1; padding:12px; background:#eee; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">ຍົກເລີກ</button>
+        <button id="btnConfirmRecv" onclick="confirmReceivePo()" style="flex:2; padding:12px; background:#00e676; color:#111; border:none; border-radius:6px; font-weight:900; cursor:pointer;">✅ ຢືນຢັນຮັບເຄື່ອງ & ບວກສະຕັອກ</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="editPriceModal">
+    <div class="modal-content">
+      <h3 style="margin-bottom:15px; border-bottom:2px solid #111; padding-bottom:10px; color:#1565c0; display:flex; align-items:center; gap:8px; font-size:1.1rem;">
+        <span class="material-icons-outlined">edit_square</span> ແກ້ໄຂລາຄາ: <span id="editPoIdDisplay" style="color:#111;"></span>
+      </h3>
+      <div style="font-size:0.75rem; color:#666; margin-bottom:15px; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+        💡 ແກ້ໄຂລາຄາຕົ້ນທຶน ແລະ ເພີ່ມຄ່າຂົນສົ່ງຕໍ່ອັນໄດ້ຢູ່ດ້ານລຸ່ມນີ້
+      </div>
+      
+      <div id="editItemsContainer" style="max-height: 350px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;"></div>
+      
+      <div style="display: flex; gap: 10px;">
+        <button onclick="document.getElementById('editPriceModal').style.display='none'" style="flex:1; padding:14px; background:#eee; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem;">ຍົກເລີກ</button>
+        <button id="btnConfirmEditPrice" onclick="confirmEditPrice()" style="flex:1; padding:14px; background:#111; color:#fff; border:none; border-radius:8px; font-weight:900; cursor:pointer; font-size:0.85rem;">💾 ບັນທຶກລາຄາໃໝ່</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function linkToPage(pageName) { google.script.run.withSuccessHandler(url => { window.top.location.href = url + '?page=' + pageName; }).getScriptUrl(); }
+    function checkAuth() { if (localStorage.getItem('savage_auth') === 'true') { document.getElementById('loginOverlay').style.display = 'none'; loadGlobalProducts(); } else { document.getElementById('loginOverlay').style.display = 'flex'; } }
+    function checkLogin() { var u = document.getElementById('loginUser').value; var p = document.getElementById('loginPass').value; if (u === 'savage' && p === '112233') { localStorage.setItem('savage_auth', 'true'); checkAuth(); } else { document.getElementById('loginError').style.display = 'block'; } }
+    function logoutSavage() { localStorage.removeItem('savage_auth'); location.reload(); }
+    window.onload = function() { checkAuth(); loadPendingBadge(); };
+
+    function switchTab(tab) {
+      if(tab === 'history') { document.getElementById('tab-po-form').style.display = 'none'; document.getElementById('tab-po-history').style.display = 'flex'; loadPoHistory(); } 
+      else { document.getElementById('tab-po-history').style.display = 'none'; document.getElementById('tab-po-form').style.display = 'flex'; }
+    }
+    function getDirectImageUrl(url) {
+      if (!url) return 'https://via.placeholder.com/150?text=No+Image';
+      var match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) return 'https://drive.google.com/thumbnail?id=' + match[1] + '&sz=w300';
+      return url; 
+    }
+
+    var globalPosProducts = []; var poCart = [];
+    var currentCat = 'ALL'; var currentModel = 'ALL';
+
+    function loadGlobalProducts() {
+      document.getElementById('stock-loader').style.display = 'flex';
+      google.script.run.withSuccessHandler(res => { 
+        let r = JSON.parse(res); 
+        if(r.success) {
+          globalPosProducts = r.data || []; document.getElementById('stock-loader').style.display = 'none';
+          renderStockCategories(); renderStockModels(); applyStockFilters();
+        }
+      }).getPosProducts();
+    }
+    function renderStockCategories() {
+      var cats = []; globalPosProducts.forEach(p => { if(p.category && p.category !== 'All PARTS' && cats.indexOf(p.category) === -1) cats.push(p.category); }); cats.sort();
+      var html = '<option value="ALL">ທຸກໝວດໝູ່ (Categories)</option>';
+      cats.forEach(c => { html += '<option value="'+c+'">'+c+'</option>'; }); document.getElementById('stockCategorySelect').innerHTML = html;
+    }
+    function renderStockModels() {
+      var models = [];
+      globalPosProducts.forEach(p => { var mArr = p.model.split(','); mArr.forEach(m => { let cleanM = m.trim(); if(cleanM && cleanM !== 'All MODELS' && models.indexOf(cleanM) === -1) models.push(cleanM); }); }); models.sort(); 
+      var html = '<option value="ALL">ທຸກລຸ້ນລົດ (Models)</option>';
+      models.forEach(m => { html += '<option value="'+m+'">'+m.toUpperCase()+'</option>'; }); document.getElementById('stockModelSelect').innerHTML = html;
+    }
+    function applyStockFilters() {
+      currentCat = document.getElementById('stockCategorySelect').value; currentModel = document.getElementById('stockModelSelect').value;
+      var searchText = document.getElementById('stockSearchInput').value.toLowerCase();
+      var filtered = globalPosProducts.filter(p => { return ((currentCat === 'ALL') || (p.category === currentCat)) && ((currentModel === 'ALL') || (p.model.indexOf(currentModel) !== -1)) && (p.name.toLowerCase().includes(searchText) || p.id.toLowerCase().includes(searchText)); });
+      renderStockProducts(filtered);
+    }
+    function renderStockProducts(products) {
+      if (products.length === 0) { document.getElementById('stockProductGrid').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: #888; font-weight: bold;">ບໍ່ພົບສິນຄ້າທີ່ຄົ້ນຫາ</div>'; return; }
+      var html = '';
+      products.forEach(p => {
+        var finalImg = getDirectImageUrl(p.img); let safeName = p.name.replace(/'/g, "\\'").replace(/"/g, '&quot;'); let showModel = p.model ? p.model.replace(/'/g, "\\'") : '';
+        html += `<div class="pos-card"><div class="pos-img-box"><img src="${finalImg}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'"></div><div class="pos-title"><span style="color:#1565c0;">[${p.id}]</span> ${p.name}</div><div style="font-size:0.65rem; color:#d84315; font-weight:bold;">ລຸ້ນ: ${p.model}</div><div class="pos-card-bottom"><div><div style="font-size:0.65rem; color:#888;">ທຶນ: ${p.cost || 0}</div><div style="font-size:0.65rem; color:#888;">ມີ: ${p.stock || 0}</div></div><button class="pos-btn-add" onclick="addPoCart('${p.id}', '${safeName}', ${p.cost || p.price || 0}, ${p.stock || 0}, '${showModel}')">+</button></div></div>`;
+      });
+      document.getElementById('stockProductGrid').innerHTML = html;
+    }
+
+    function addPoCart(id, name, cost, currentStock, model) {
+      name = name.replace(/&quot;/g, '"');
+      let existing = poCart.find(i => i.id === id);
+      if(existing) existing.qty += 1; else poCart.push({ id: id, name: name, cost: parseFloat(cost) || 0, qty: 1, stock: currentStock, model: model });
+      updatePoCalculations();
+    }
+    function removePoCart(index) { poCart.splice(index, 1); updatePoCalculations(); }
+    function updatePoQty(index, val) { poCart[index].qty = parseFloat(val) || 1; updatePoCalculations(); }
+    function updatePoCost(index, val) { poCart[index].cost = parseFloat(val) || 0; updatePoCalculations(); }
+
+    function updatePoCalculations() {
+      let tbody = document.getElementById('poCartTable');
+      if(poCart.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999; padding:20px;">ຍັງບໍ່ມີສິນຄ້າໃນບິນ</td></tr>';
+        document.getElementById('poTotalQty').innerText = "0 ຊິ້ນ"; document.getElementById('poGrandTotal').innerText = "0"; return;
+      }
+      
+      let totalQty = poCart.reduce((sum, item) => sum + item.qty, 0);
+      let shippingFee = parseFloat(document.getElementById('poShippingFee').value) || 0;
+      let shippingPerItem = totalQty > 0 ? (shippingFee / totalQty) : 0;
+      let grandTotal = 0; let html = '';
+      
+      poCart.forEach((item, index) => {
+        let landedCost = item.cost + shippingPerItem;
+        item.landedCost = landedCost; grandTotal += (landedCost * item.qty);
+        
+        html += `
+          <tr>
+            <td style="max-width:110px;">
+              <div style="font-weight:bold; color:#111; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${item.name}"><span style="color:#1565c0;">[${item.id}]</span> ${item.name}</div>
+            </td>
+            <td style="text-align:center;"><input type="number" class="po-input-small" value="${item.qty}" min="1" onchange="updatePoQty(${index}, this.value)"></td>
+            <td style="text-align:center;"><input type="number" class="po-input-price" value="${item.cost}" onchange="updatePoCost(${index}, this.value)"></td>
+            <td style="text-align:center;"><button onclick="removePoCart(${index})" style="background:none; border:none; color:red; cursor:pointer;"><span class="material-icons-outlined" style="font-size:18px;">delete</span></button></td>
+          </tr>`;
+      });
+      tbody.innerHTML = html; 
+      document.getElementById('poTotalQty').innerText = totalQty.toLocaleString() + " ຊິ້ນ";
+      document.getElementById('poGrandTotal').innerText = grandTotal.toLocaleString() + " ₭";
+    }
+
+    function submitPurchaseOrder(statusText) {
+      let supplier = document.getElementById('poSupplier').value.trim();
+      let shippingFee = parseFloat(document.getElementById('poShippingFee').value) || 0;
+      if(!supplier) { alert("ກະລຸນາປ້ອນຊື່ຜູ້ສະໜອງ (Supplier) ກ່ອນ!"); return; }
+      if(poCart.length === 0) { alert("ບໍ່ມີສິນຄ້າในບິນ!"); return; }
+
+      let totalQty = poCart.reduce((sum, item) => sum + item.qty, 0);
+      let grandTotal = poCart.reduce((sum, item) => sum + (item.landedCost * item.qty), 0);
+      let payload = { supplier: supplier, shippingFee: shippingFee, totalQty: totalQty, totalLandedCost: grandTotal, status: statusText, items: poCart };
+
+      let btn1 = document.getElementById('btn-save-po'); let btn2 = document.getElementById('btn-receive-po');
+      let txt1 = btn1.innerHTML; btn1.innerHTML = 'ກຳລັງບັນທຶກ...'; btn1.disabled = true; btn2.disabled = true;
+
+      google.script.run.withSuccessHandler(res => {
+        if(res.success) {
+          alert(statusText === 'ຮັບເຂົ້າແລ້ວ' ? "ຮັບເຄື່ອງເຂົ້າສະຕັອກສຳເລັດ!" : "ບັນທຶກບินສັ່ງຊື້ສຳເລັດ!");
+          poCart = []; document.getElementById('poSupplier').value = ''; document.getElementById('poShippingFee').value = '';
+          updatePoCalculations(); loadGlobalProducts();
+        } else { alert("Error: " + res.message); }
+        btn1.innerHTML = txt1; btn1.disabled = false; btn2.disabled = false;
+      }).savePurchaseOrder(payload);
+    }
+
+    let globalPoHistoryList = [];
+    function loadPoHistory() {
+      document.getElementById('po-history-container').innerHTML = '<div class="loading"><span class="material-icons-outlined" style="animation: spin 1s linear infinite; font-size:40px;">sync</span><br>ກຳລັງໂຫຼດປະຫວັດ...</div>';
+      google.script.run.withSuccessHandler(resStr => {
+        try { let res = JSON.parse(resStr); if(!res.success) throw new Error(res.error); globalPoHistoryList = res.data || []; filterPoHistory('ALL'); } 
+        catch(e) { document.getElementById('po-history-container').innerHTML = '<div style="color:red; text-align:center;">'+e.message+'</div>'; }
+      }).getPurchaseOrdersList();
+    }
+
+    function filterPoHistory(status) {
+      document.getElementById('tab-all').classList.remove('active'); document.getElementById('tab-pending').classList.remove('active'); document.getElementById('tab-received').classList.remove('active');
+      if(status === 'ALL') document.getElementById('tab-all').classList.add('active'); else if(status === 'ກຳລັງຂົນສົ່ງ') document.getElementById('tab-pending').classList.add('active'); else if(status === 'ຮັບເຂົ້າແລ້ວ') document.getElementById('tab-received').classList.add('active');
+      let filteredList = status === 'ALL' ? globalPoHistoryList : globalPoHistoryList.filter(po => po.status === status);
+      
+      let cPending = 0; let cReceived = 0;
+      globalPoHistoryList.forEach(po => { if(po.status === 'ຮັບເຂົ້າແລ້ວ') cReceived++; else cPending++; });
+      document.getElementById('po-count-pending').innerText = cPending; document.getElementById('po-count-received').innerText = cReceived;
+      renderPoHistoryCards(filteredList);
+    }
+
+    function renderPoHistoryCards(list) {
+      let container = document.getElementById('po-history-container');
+      if(list.length === 0) { container.innerHTML = '<div style="text-align:center; padding:30px; color:#999; background:white; border-radius:12px;">ບໍ່ມີປະຫວັດບິນໃນສະຖານະນີ້</div>'; return; }
+      
+      let html = ''; 
+      list.forEach(po => {
+        let isReceived = po.status === 'ຮັບເຂົ້າແລ້ວ';
+        let badgeColor = isReceived ? 'background:#e8f5e9; color:#2e7d32;' : 'background:#fff3e0; color:#e65100;';
+        let receiveBtn = !isReceived ? `<button onclick="openReceiveModal('${po.poId}')" class="btn-action-po btn-po-receive" style="margin-top:10px;"><span class="material-icons-outlined">inventory</span> ກົດຮັບເຄື່ອງ & ປັບຈຳນວນ</button>` : `<div style="text-align:center; font-size:0.8rem; color:#888; margin-top:10px;">ວັນທີຮັບເຄື່ອງ: ${po.receivedDate}</div>`;
+
+        html += `
+          <div class="order-card">
+            <button id="btn-del-${po.poId}" onclick="deletePoOrder('${po.poId}')" style="position:absolute; top:15px; right:15px; background:none; border:none; color:#f44336; cursor:pointer;" title="ລຶບບິນນີ້"><span class="material-icons-outlined">delete</span></button>
+            
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px; padding-right:30px;">
+              <div><div style="font-weight:900; font-size:1.1rem; color:#111; font-family:'Montserrat';">${po.poId}</div><div style="font-size:0.75rem; color:#888;">ສັ່ງເມື່ອ: ${po.date}</div></div>
+              <div style="${badgeColor} padding:6px 12px; border-radius:20px; font-weight:800; font-size:0.75rem;">${po.status}</div>
+            </div>
+            
+            <div style="margin-bottom:10px; font-size:0.85rem;"><span style="color:#888; font-weight:bold;">ຜູ້ສະໜອງ:</span> <span style="font-weight:bold; color:#111;">${po.supplier}</span></div>
+            <div style="background:#f9f9f9; padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+              <div><div style="font-size:0.7rem; color:#666;">ຈຳນວນລວມ</div><div style="font-weight:bold; color:#111;">${po.qty} ຊິ້ນ</div></div>
+              <div style="text-align:right;"><div style="font-size:0.7rem; color:#666;">ມູນຄ່າລວມ</div><div style="font-weight:900; color:#1565c0; font-size:1.1rem;">${po.totalCost.toLocaleString()} ₭</div></div>
+            </div>
+            
+            <div style="display:flex; gap:10px;">
+              <button onclick="openEditPriceModal('${po.poId}')" class="btn-action-po" style="background:#fff; color:#1565c0; border:1px solid #1565c0; margin-top:10px; flex:1;"><span class="material-icons-outlined">edit</span> ແກ້ໄຂລາຄາ</button>
+              <div style="flex:2;">${receiveBtn}</div>
+            </div>
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    // --- 🌟 Edit Price Modal Logic 🌟 ---
+    let currentEditItems = [];
+    function openEditPriceModal(poId) {
+      document.getElementById('editPoIdDisplay').innerText = poId;
+      document.getElementById('editItemsContainer').innerHTML = '<div class="loading" style="padding:20px;">ກຳລັງໂຫຼດລາຍການ...</div>';
+      document.getElementById('editPriceModal').style.display = 'flex';
+
+      google.script.run.withSuccessHandler(resStr => {
+        let res = JSON.parse(resStr);
+        if(res.success) {
+          currentEditItems = res.items; 
+          let html = '';
+          currentEditItems.forEach(it => {
+            let ship = it.shipping || 0; 
+            html += `
+              <div style="border-bottom: 1px dashed #ddd; padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="font-size: 0.8rem; font-weight: 700; color: #111; margin-bottom: 8px;">
+                  <span style="color: #1565c0;">[${it.id}]</span> ${it.name}
+                </div>
+                <div style="display: flex; gap: 10px;">
+                  <div style="flex: 1;">
+                    <div style="font-size: 0.65rem; font-weight: 800; color: #666; margin-bottom: 4px;">ຕົ້ນທຶນ/ອັນ (Cost)</div>
+                    <input type="number" id="editCost_${it.id}" value="${it.cost}" class="po-input-price" style="width: 100%; font-size: 0.9rem;">
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 0.65rem; font-weight: 800; color: #e65100; margin-bottom: 4px;">ຂົນສົ່ງ/ອັນ (Shipping)</div>
+                    <input type="number" id="editShip_${it.id}" value="${ship}" class="po-input-price" style="width: 100%; font-size: 0.9rem; border-color: #ffb74d; color: #e65100;">
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+          document.getElementById('editItemsContainer').innerHTML = html;
+        } else { document.getElementById('editItemsContainer').innerHTML = '<div style="color:red; text-align:center; padding:20px;">'+res.message+'</div>'; }
+      }).getPoDetailsForReceive(poId);
+    }
+
+    function confirmEditPrice() {
+      let poId = document.getElementById('editPoIdDisplay').innerText;
+      let itemsToUpdate = [];
+      currentEditItems.forEach(it => {
+        let costInput = document.getElementById(`editCost_${it.id}`);
+        let shipInput = document.getElementById(`editShip_${it.id}`);
+        let finalCost = costInput ? parseFloat(costInput.value) : parseFloat(it.cost);
+        let finalShip = shipInput ? parseFloat(shipInput.value) : 0;
+        
+        itemsToUpdate.push({ id: it.id, cost: finalCost, shipping: finalShip });
+      });
+
+      let btn = document.getElementById('btnConfirmEditPrice'); let originalText = btn.innerHTML;
+      btn.innerHTML = 'ກຳລັງບັນທຶກ...'; btn.disabled = true;
+
+      google.script.run.withSuccessHandler(res => {
+        if(res.success) {
+          alert('ແກ້ໄຂລາຄາສຳເລັດ!'); 
+          document.getElementById('editPriceModal').style.display = 'none';
+          loadPoHistory(); 
+        } else { alert("Error: " + res.message); }
+        btn.innerHTML = originalText; btn.disabled = false;
+      }).updatePurchaseOrderPrices(poId, JSON.stringify(itemsToUpdate));
+    }
+
+    function deletePoOrder(poId) {
+      if(confirm(`⚠️ ທ່ານຕ້ອງການລຶບບິນສັ່ງຊື້ ${poId} ຖິ້ມແທ້ບໍ່?\n(ລຶບແລ້ວບໍ່ສາມາດກູ້ຄືນໄດ້)`)) {
+        let btn = document.getElementById('btn-del-' + poId);
+        btn.style.opacity = '0.5';
+        google.script.run.withSuccessHandler(res => {
+          if(res.success) { alert('ລຶບບິນສຳເລັດ!'); loadPoHistory(); } 
+          else { alert("Error: " + res.message); btn.style.opacity = '1'; }
+        }).deletePurchaseOrderData(poId);
+      }
+    }
+
+    let currentRecvItems = []; let currentRecvPoId = '';
+    function openReceiveModal(poId) {
+      currentRecvPoId = poId; document.getElementById('recvPoIdDisplay').innerText = poId;
+      let today = new Date(); let dStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      document.getElementById('recvDateInput').value = dStr;
+      document.getElementById('recvItemsContainer').innerHTML = '<div class="loading" style="padding:20px;">ກຳລັງໂຫຼດລາຍການ...</div>';
+      document.getElementById('receivePoModal').style.display = 'flex';
+      google.script.run.withSuccessHandler(resStr => {
+        let res = JSON.parse(resStr);
+        if(res.success) {
+          currentRecvItems = res.items; document.getElementById('recvShippingFee').value = res.shippingFee || 0; 
+          let html = '<table class="po-table"><tr><th>ລະຫັດ & ຊື່ສິນຄ້າ</th><th style="width:70px; text-align:center;">ຈຳນວນ</th><th style="width:115px; text-align:center;">ຕົ້ນທຶນ/ອັນ</th></tr>';
+          currentRecvItems.forEach(it => {
+            html += `<tr><td><div style="font-size:0.75rem; color:#1565c0; font-weight:bold;">[${it.id}]</div><div style="font-size:0.8rem; font-weight:600;">${it.name}</div></td><td style="text-align:center;"><input type="number" id="recvQty_${it.id}" value="${it.qty}" class="po-input-small" style="width:50px;"></td><td style="text-align:center;"><input type="number" id="recvCost_${it.id}" value="${it.cost}" class="po-input-price"></td></tr>`;
+          });
+          html += '</table>'; document.getElementById('recvItemsContainer').innerHTML = html;
+        } else { document.getElementById('recvItemsContainer').innerHTML = '<div style="color:red; text-align:center; padding:20px;">'+res.message+'</div>'; }
+      }).getPoDetailsForReceive(poId);
+    }
+
+    function confirmReceivePo() {
+      let recvDate = document.getElementById('recvDateInput').value; if(!recvDate) { alert('ກະລຸນາເລືອກວັນທີຮັບເຄື່ອງ!'); return; }
+      let newShippingFee = document.getElementById('recvShippingFee').value;
+      let itemsToUpdate = [];
+      currentRecvItems.forEach(it => {
+        let qtyInput = document.getElementById(`recvQty_${it.id}`); let costInput = document.getElementById(`recvCost_${it.id}`);
+        let finalQty = qtyInput ? parseFloat(qtyInput.value) : parseFloat(it.cost); let finalCost = costInput ? parseFloat(costInput.value) : parseFloat(it.cost);
+        itemsToUpdate.push({ id: it.id, qty: finalQty, cost: finalCost });
+      });
+
+      let btn = document.getElementById('btnConfirmRecv'); let originalText = btn.innerHTML;
+      btn.innerHTML = 'ກຳລັງບັນທຶກ...'; btn.disabled = true;
+
+      google.script.run.withSuccessHandler(resStr => {
+        let res = JSON.parse(resStr);
+        if(res.success) { alert('ຮັບເຄື່ອງ ແລະ ບວກສະຕັອກເຂົ້າລະບົບສຳເລັດ!'); document.getElementById('receivePoModal').style.display = 'none'; loadPoHistory(); loadGlobalProducts(); } 
+        else { alert("Error: " + res.message); }
+        btn.innerHTML = originalText; btn.disabled = false;
+      }).markPOAsReceivedCustom(currentRecvPoId, recvDate, JSON.stringify(itemsToUpdate), newShippingFee);
+    }
+
+    function loadPendingBadge() { google.script.run.withSuccessHandler(jsonString => { try { var response = JSON.parse(jsonString); var pendingCount = 0; var globalOrders = response.data || []; for (var i = 0; i < globalOrders.length; i++) { if (String(globalOrders[i].status || "ລໍຖ້າກວດສອບ").trim() === "ລໍຖ້າກວດສອບ") pendingCount++; } var navBadge = document.getElementById('nav-badge-pending'); if (navBadge) { if (pendingCount > 0) { navBadge.innerText = pendingCount; navBadge.style.display = 'flex'; } else navBadge.style.display = 'none'; } } catch (e) { } }).getAdminData(); }
+  </script>
+</body>
+</html>

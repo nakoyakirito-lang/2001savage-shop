@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: #f8f8f8; color: #111; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; padding-bottom: 90px; font-family: 'Noto Sans Lao', 'Montserrat', sans-serif !important; }
+    .material-icons-outlined { font-family: 'Material Icons Outlined' !important; }
+    a { text-decoration: none; color: inherit; }
+    
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #eee; }
+    .header .title { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.2rem; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* Profile Avatar Section */
+    .profile-header { background: #111; color: white; padding: 40px 20px; text-align: center; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; margin-bottom: -20px; position: relative; z-index: 10; }
+    .avatar-circle { width: 80px; height: 80px; background: #deff9a; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; border: 4px solid #333; }
+    .avatar-circle .material-icons-outlined { font-size: 40px; color: #111; }
+    .profile-name-display { font-family: 'Montserrat', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 5px; }
+    .profile-subtext { font-size: 0.8rem; color: #aaa; font-weight: 600; }
+
+    /* Form Container */
+    .customer-form { background: white; padding: 30px 20px 20px; border-radius: 16px; margin: 0 20px 20px; border: 1px solid #eee; position: relative; z-index: 20; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    .form-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 20px; border-left: 4px solid #deff9a; padding-left: 10px; color: #111; text-transform: uppercase; }
+    
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #666; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 0.85rem; outline: none; background: #fdfdfd; color: #111; transition: border-color 0.2s; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #111; background: #fff; }
+
+    .btn-save { display: flex; align-items: center; justify-content: center; gap: 10px; background: #111; color: white; border-radius: 30px; padding: 16px; width: 100%; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.9rem; letter-spacing: 1px; border: none; cursor: pointer; margin-top: 10px; transition: background 0.3s; }
+    .btn-save:active { background: #333; }
+
+    /* Bottom Nav (3 ปุ่ม) */
+    .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: white; display: flex; justify-content: space-around; border-top: 1px solid #eee; z-index: 100; padding: 10px 0 20px; }
+    .nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; font-family: 'Montserrat', sans-serif; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.5px; gap: 4px; width: 33.33%; }
+    .nav-link.active { color: #111; } 
+    .nav-icon-box { background: transparent; padding: 4px 20px; border-radius: 15px; transition: background 0.2s; }
+    .nav-link.active .nav-icon-box { background: #f0f0f0; }
+    .nav-link.active .material-icons-outlined { color: #111; }
+  /* ✨ โค้ดสูตรลัด: บังคับย่อขนาดเมนูต่างๆ ให้เล็กลงและดูมินิมอลขึ้น ✨ */
+    
+    /* 1. ย่อแถบด้านบน (Header) */
+    .header { padding: 10px 15px !important; }
+    .header .title { font-size: 0.95rem !important; }
+    .icon-btn .material-icons-outlined { font-size: 22px !important; }
+
+    /* 2. ย่อเมนูด้านล่าง (Bottom Nav) */
+    .bottom-nav { padding: 6px 0 15px !important; }
+    .nav-link { font-size: 0.5rem !important; gap: 2px !important; }
+    .nav-link .material-icons-outlined { font-size: 22px !important; }
+    .nav-icon-box { padding: 2px 12px !important; }
+
+    /* 3. ย่อแถบ 2 เมนู (CART / HISTORY) ในหน้า orders */
+    .tab-btn { padding: 10px 0 !important; font-size: 0.7rem !important; }
+    </style>
+</head>
+<body>
+
+  <header class="header">
+    <a href="<?= getScriptUrl() ?>?page=home" target="_top" class="icon-btn">
+      <span class="material-icons-outlined">arrow_back</span>
+    </a>
+    
+    <div class="title">MY PROFILE</div>
+    <div style="width: 24px;"></div>
+  </header>
+
+  <div class="navigation-bar">
+    <div class="breadcrumbs">
+      <a href="<?= getScriptUrl() ?>?page=home" target="_top" class="home-link">HOME</a>
+      <span class="material-icons-outlined" style="font-size:12px; margin: 0 5px;">chevron_right</span>
+      <span class="model-name">PROFILE</span>
+    </div>
+  </div>
+  <div class="profile-header">
+    <div class="avatar-circle">
+      <span class="material-icons-outlined">person</span>
+    </div>
+    <div class="profile-name-display" id="display-name">CUSTOMER</div>
+    <div class="profile-subtext">SAVAGE SHOP MEMBER</div>
+  </div>
+
+  <div class="customer-form">
+    <div class="form-title">ຂໍ້ມູນສ່ວນຕົວ / Personal Info</div>
+    
+    <div class="form-group">
+      <label>ຊື່ ແລະ ນາມສະກຸນ (NAME)</label>
+      <input type="text" id="prof-name" placeholder="ປ້ອນຊື່ຂອງທ່ານ...">
+    </div>
+    
+    <div class="form-group">
+      <label>ເບີໂທຕິດຕໍ່ (WHATSAPP PHONE)</label>
+      <input type="tel" id="prof-phone" placeholder="ຕົວຢ່າງ: 020 XXXXXXXX">
+    </div>
+
+    <div class="form-group">
+      <label>ແຂວງ (PROVINCE)</label>
+      <select id="prof-province" onchange="updateDistricts()">
+        <option value="" disabled selected>-- ເລືອກແຂວງ --</option>
+        <option value="ນະຄອນຫຼວງວຽງຈັນ">ນະຄອນຫຼວງວຽງຈັນ</option>
+        <option value="ຜົ້ງສາລີ">ຜົ້ງສາລີ</option>
+        <option value="ຫຼວງນ້ຳທາ">ຫຼວງນ້ຳທາ</option>
+        <option value="ອຸດົມໄຊ">ອຸດົມໄຊ</option>
+        <option value="ບໍ່ແກ้ວ">ບໍ່ແກ້ວ</option>
+        <option value="ຫຼວງພະບາງ">ຫຼວງພະບາງ</option>
+        <option value="ຫົວພັນ">ຫົວພັນ</option>
+        <option value="ໄຊຍະບູລີ">ໄຊຍະບູลີ</option>
+        <option value="ຊຽງຂວາງ">ຊຽງຂວາງ</option>
+        <option value="ວຽງຈັນ">ວຽງຈັນ</option>
+        <option value="ບໍລິຄຳໄຊ">ບໍລິຄຳໄຊ</option>
+        <option value="ຄຳມ່ວນ">ຄຳມ່ວນ</option>
+        <option value="ສະຫວັນນະເຂດ">ສະຫວັນນະເຂດ</option>
+        <option value="ສາລະວັນ">ສາລະວັນ</option>
+        <option value="ເຊກອງ">ເຊກອງ</option>
+        <option value="ຈຳປາສັກ">ຈຳປາສັກ</option>
+        <option value="ອັດຕະປື">ອັດຕະປື</option>
+        <option value="ໄຊສົມບູນ">ໄຊສົມບູນ</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>ເມືອງ (DISTRICT)</label>
+      <select id="prof-district" disabled>
+        <option value="" disabled selected>-- ກະລຸນາເລືອກແຂວງກ່ອນ --</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>ທີ່ຢູ່ລາຍລະອຽດ (ADDRESS DETAILS)</label>
+      <textarea id="prof-address" rows="2" placeholder="ບ້ານ, ຮ່ອມ, ຈຸດສັງເກດ ຫຼື ຂໍ້ມູນຂົນສົ່ງປະຈຳ..."></textarea>
+    </div>
+
+    <button class="btn-save" id="btn-save" onclick="saveProfile()">
+      <span class="material-icons-outlined">save</span>
+      SAVE PROFILE
+    </button>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="<?= getScriptUrl() ?>?page=home" target="_top" class="nav-link">
+      <div class="nav-icon-box"><span class="material-icons-outlined">home</span></div><span>HOME</span>
+    </a>
+    <a href="<?= getScriptUrl() ?>?page=orders" target="_top" class="nav-link">
+      <div class="nav-icon-box" style="position: relative; display: inline-block;">
+        <span class="material-icons-outlined">receipt_long</span>
+        <span id="nav-cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:#ff3d00; color:white; border-radius:50%; font-size:10px; font-weight:bold; min-width: 18px; height: 18px; line-height: 18px; text-align: center; padding: 0 4px; z-index: 10;">0</span>
+      </div>
+      <span>ORDERS</span>
+    </a>
+    <a href="javascript:void(0);" class="nav-link active">
+      <div class="nav-icon-box"><span class="material-icons-outlined">person</span></div><span>PROFILE</span>
+    </a>
+  </nav>
+
+  <script>
+    // 🌟 ຖານຂໍ້ມູນເມືອງ ທັງ 18 ແຂວງ ໃນລາວ (เหมือนหน้า Cart) 🌟
+    var laoDistricts = {
+      "ນະຄອນຫຼວງວຽງຈັນ": ["ຈັນທະບູລີ", "ສີໂຄດຕະບອງ", "ໄຊເສດຖາ", "ສີສັດຕະນາກ", "ນາຊາຍທອງ", "ໄຊທານີ", "ຫາດຊາຍຟອງ", "ສັງທອງ", "ປາກງື່ມ"],
+      "ຜົ້ງສາລີ": ["ຜົ້ງສາລີ", "ໃໝ່", "ຂວາ", "ສຳພັນ", "ບຸນເໜືອ", "ຍອດອູ", "ບຸນໃຕ້"],
+      "ຫຼວງນ້ຳທາ": ["ຫຼວງນ້ຳທາ", "ສິງ", "ລອງ", "ວຽງພູຄາ", "ນາແລ"],
+      "ອຸດົມໄຊ": ["ໄຊ", "ຫຼາ", "ນາໝໍ້", "ງา", "ແບ່ງ", "ຮຸນ", "ປາກແບ່ງ"],
+      "ບໍ່ແກ້ວ": ["ຫ້ວຍຊາຍ", "ຕົ້ນເຜິ້ງ", "ເມິງ", "ຜາອຸດົມ", "ປາກທາ"],
+      "ຫຼວງພະບາງ": ["ຫຼວງພະບາງ", "ຊຽງເງິນ", "ນານ", "ປາກອູ", "ນ້ຳບາກ", "ງອຍ", "ປາກແຊງ", "ໂພນໄຊ", "ຈອມເພັດ", "ວຽງຄຳ", "ພູຄູນ"],
+      "ຫົວພັນ": ["ຊຳເໜືອ", "ຊຽງຄໍ້", "ຮ້ຽມ", "ວຽງໄຊ", "ຫົວເມືອງ", "ຊຳໃຕ້", "ສົບເບົາ", "ແອດ", "ກັວນ", "ຊ່ອນ"],
+      "ໄຊຍະບູລີ": ["ໄຊຍະບູລີ", "ຄອບ", "ຊຽງຮ່ອນ", "ເງິນ", "ຫົງສາ", "ໄຊສະຖານ", "ຄຳ", "ປາກລາຍ", "ແກ່ນທ້າວ", "ບໍ່ແຕນ", "ທົ່ງມີໄຊ"],
+      "ຊຽງຂວາງ": ["ແປກ", "ຄຳ", "ໜອງແຮດ", "ຄູນ", "ໝອກໃໝ່", "ພູກູດ", "ຜาໄຊ"],
+      "ວຽງຈັນ": ["ໂພນໂຮງ", "ທຸລະຄົມ", "ແກ້ວອຸດົມ", "ກາສີ", "ວັງວຽງ", "ເຟືອງ", "ຊະນະຄາມ", "ແມດ", "ວຽງຄຳ", "ຫີນເຫີບ", "ໝື່ນ"],
+      "ບໍລິຄຳໄຊ": ["ປາກຊັນ", "ທ່າພะບາດ", "ປາກກະດິງ", "ບໍລິຄັນ", "ຄຳເກີດ", "ວຽງທອງ", "ໄຊຈຳພອນ"],
+      "ຄຳມ່ວນ": ["ທ່າແຂກ", "ມະຫາໄຊ", "ໜອງບົກ", "ຫີນບູນ", "ຍົມມະລາດ", "ບົວລະພາ", "ນາກາຍ", "ເຊບັ້ງໄຟ", "ໄຊບົວທອງ", "ຄູນຄຳ"],
+      "ສະຫວັນນະເຂດ": ["ໄກສອນ ພົມວິຫານ", "ອຸທຸມພອນ", "ອາດສະພັງທອງ", "ພີນ", "ເຊໂປນ", "ນອງ", "ທ່າປາງທອງ", "ສອງຄອນ", "ຈຳພອນ", "ຊົນນະບູລີ", "ໄຊບູລີ", "ວີລະບຸລີ", "ອາດສະພອນ", "ໄຊພູທອງ", "ພະລានໄຊ"],
+      "ສາລະວັນ": ["ສາລະວັນ", "ຕະໂອ້ຍ", "ຕຸ້ມລານ", "ລະຄອນເພັງ", "ວາປີ", "ຄົງເຊໂດນ", "ສະໝ້ວຍ"],
+      "ເຊກອງ": ["ລະມາມ", "ກະລຶມ", "ດາກຈຶງ", "ທ່າແຕງ"],
+      "ຈຳປາສັກ": ["ປາກເຊ", "ຊະນະສົມບູນ", "ບາຈຽງຈະເລີນສຸກ", "ປາກຊ່ອງ", "ປະທຸມພອນ", "ໂພນທອງ", "ຈຳປາສັກ", "ສຸຂຸມາ", "ມູນລະປາໂມກ", "ໂຂງ"],
+      "ອັດຕະປື": ["ໄຊເສດຖາ", "ສາມັກຄີໄຊ", "ສະໜາມໄຊ", "ຊານໄຊ", "ພູວົງ"],
+      "ໄຊສົມບູນ": ["ອະນຸວົງ", "ລ້ອງຊານ", "ລ້ອງແຈ້ງ", "ທ່າໂທມ", "ຮົ່ມ"]
+    };
+
+    function updateDistricts(savedDistrict) {
+      var provSelect = document.getElementById('prof-province');
+      var distSelect = document.getElementById('prof-district');
+      var selectedProv = provSelect.value;
+      
+      distSelect.innerHTML = '<option value="" disabled selected>-- ເລືອກເມືອງ --</option>'; 
+      
+      if (selectedProv && laoDistricts[selectedProv]) {
+        var districts = laoDistricts[selectedProv];
+        for (var i = 0; i < districts.length; i++) {
+          distSelect.innerHTML += '<option value="' + districts[i] + '">' + districts[i] + '</option>';
+        }
+        distSelect.disabled = false; 
+
+        // ถ้ามีการส่งค่าเมืองเก่ามา ให้เลือกให้อัตโนมัติ
+        if(savedDistrict) {
+          distSelect.value = savedDistrict;
+        }
+      } else {
+        distSelect.disabled = true; 
+      }
+    }
+
+    // ฟังก์ชันโหลดข้อมูลโปรไฟล์ที่เคยเซฟไว้ขึ้นมาโชว์
+    function loadProfile() {
+      var profile = JSON.parse(localStorage.getItem('savage_profile'));
+      if (profile) {
+        if(profile.name) {
+          document.getElementById('prof-name').value = profile.name;
+          document.getElementById('display-name').innerText = profile.name.toUpperCase();
+        }
+        if(profile.phone) document.getElementById('prof-phone').value = profile.phone;
+        if(profile.address) document.getElementById('prof-address').value = profile.address;
+        
+        if(profile.province) {
+          document.getElementById('prof-province').value = profile.province;
+          updateDistricts(profile.district); // โหลดอำเภอต่อทันที
+        }
+      }
+    }
+
+    // ฟังก์ชันกดปุ่มเซฟข้อมูลลงเครื่อง
+    function saveProfile() {
+      var name = document.getElementById('prof-name').value.trim();
+      var phone = document.getElementById('prof-phone').value.trim();
+      var province = document.getElementById('prof-province').value;
+      
+      var districtElem = document.getElementById('prof-district');
+      var district = districtElem && !districtElem.disabled ? districtElem.value : "";
+      
+      var address = document.getElementById('prof-address').value.trim();
+
+      var profileData = {
+        name: name,
+        phone: phone,
+        province: province,
+        district: district,
+        address: address
+      };
+
+      // บันทึกลง LocalStorage
+      localStorage.setItem('savage_profile', JSON.stringify(profileData));
+
+      // อัปเดตชื่อที่หัวจอ
+      if(name) {
+        document.getElementById('display-name').innerText = name.toUpperCase();
+      }
+
+      // เอฟเฟกต์ปุ่ม
+      var btn = document.getElementById('btn-save');
+      var originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="material-icons-outlined">check_circle</span> SAVED SUCCESS!';
+      btn.style.background = '#00e676';
+      
+      setTimeout(function() {
+        btn.innerHTML = originalText;
+        btn.style.background = '#111';
+      }, 2000);
+    }
+
+  // โหลดข้อมูลทันทีเมื่อเปิดหน้า
+    loadProfile();
+
+    // ✨ ฟังก์ชันอัปเดตจุดแดงแจ้งเตือน (ทั้งบนและล่าง) ✨
+    function updateCartBadge() {
+      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
+      
+      // หาจุดแดงทั้ง 2 ตำแหน่ง
+      var headerBadge = document.getElementById('cart-badge'); // บนหัว
+      var navBadge = document.getElementById('nav-cart-badge'); // เมนูล่าง
+      
+      if (cart.length > 0) {
+        var totalQty = 0;
+        for (var i = 0; i < cart.length; i++) { totalQty += cart[i].qty; }
+        
+        // อัปเดตตัวเลขและโชว์จุดแดง
+        if (headerBadge) { headerBadge.innerText = totalQty; headerBadge.style.display = 'block'; }
+        if (navBadge) { navBadge.innerText = totalQty; navBadge.style.display = 'block'; }
+      } else {
+        // ซ่อนจุดแดงถ้าตะกร้าว่าง
+        if (headerBadge) headerBadge.style.display = 'none';
+        if (navBadge) navBadge.style.display = 'none';
+      }
+    }
+    
+    // สั่งรันทันทีตอนเปิดหน้า
+    updateCartBadge();
+  </script>
+</body>
+</html>

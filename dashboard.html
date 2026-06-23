@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: #f5f6f8; color: #111; height: 100vh; display: flex; overflow: hidden; font-family: 'Noto Sans Lao', 'Montserrat', sans-serif !important; }
+    .material-icons-outlined { font-family: 'Material Icons Outlined' !important; }
+    
+    /* ================= เมนูด้านข้าง (Sidebar) ================= */
+    .app-sidebar { width: 80px; background: #111; display: flex; flex-direction: column; align-items: center; padding-top: 20px; z-index: 10; flex-shrink: 0; }
+    .sidebar-logo { font-weight: 900; font-size: 0.85rem; text-align: center; margin-bottom: 40px; color: #fff; letter-spacing: -0.5px; line-height: 1.2; }
+    .menu-btn { position: relative; width: 54px; height: 54px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; margin-bottom: 20px; cursor: pointer; transition: 0.2s; gap: 4px; }
+    .menu-btn span { font-size: 0.55rem; font-weight: 800; text-align:center; line-height: 1.1; }
+    .menu-btn .material-icons-outlined { font-size: 22px; }
+    .menu-btn:hover { color: #fff; background: #222; }
+    .menu-btn.active { background: #fff; color: #111; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+    .app-body { flex: 1; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .page-view { width: 100%; height: 100%; display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 50px;}
+
+    /* --- Header --- */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #eee; }
+    .header .title { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 1px; text-transform: uppercase; }
+    
+    /* --- Main Tabs (ภาพรวม / สต็อก) --- */
+    .main-tabs { display: flex; background: #111; padding: 10px 15px 0; gap: 5px; }
+    .m-tab { flex: 1; text-align: center; padding: 12px; color: #888; font-weight: 800; font-size: 0.8rem; cursor: pointer; border-radius: 12px 12px 0 0; transition: 0.3s; }
+    .m-tab.active { background: #f5f6f8; color: #111; }
+
+    /* --- Sections --- */
+    .tab-content { display: none; animation: fadeIn 0.3s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- Overview Styles --- */
+    .time-filter { padding: 15px 20px 5px; display: flex; gap: 10px; }
+    .filter-tab { flex: 1; padding: 10px; text-align: center; background: white; border-radius: 8px; font-weight: 800; font-size: 0.75rem; color: #666; border: 1px solid #ddd; cursor: pointer; }
+    .filter-tab.active { background: #111; color: white; border-color: #111; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 15px 20px; }
+    .kpi-card { background: white; padding: 15px; border-radius: 12px; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+    .kpi-card.full { grid-column: span 2; }
+    .kpi-title { font-size: 0.7rem; font-weight: 700; color: #888; margin-bottom: 8px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
+    .kpi-value { font-family: 'Montserrat', sans-serif; font-size: 1.4rem; font-weight: 900; color: #111; }
+
+    .chart-section { background: white; margin: 0 20px 20px; padding: 15px; border-radius: 16px; border: 1px solid #eee; }
+    .chart-title { font-size: 0.9rem; font-weight: 800; margin-bottom: 15px; border-left: 4px solid #111; padding-left: 8px; }
+    .chart-box { position: relative; height: 200px; width: 100%; }
+
+    /* --- Inventory Styles --- */
+    .inv-section { margin: 20px; background: white; border-radius: 16px; border: 1px solid #eee; overflow: hidden; }
+    .inv-header { padding: 15px; color: white; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+    .inv-header.red { background: linear-gradient(135deg, #d32f2f, #f44336); }
+    .inv-header.gray { background: linear-gradient(135deg, #424242, #757575); }
+    .inv-header.gold { background: linear-gradient(135deg, #f57f17, #ffb300); }
+    
+    .inv-list { padding: 0 15px; }
+    .inv-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #eee; }
+    .inv-item:last-child { border-bottom: none; }
+    .inv-name { font-size: 0.8rem; font-weight: 700; max-width: 70%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333; }
+    
+    .badge { font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 900; padding: 4px 10px; border-radius: 6px; }
+    .badge.alert { background: #ffebee; color: #d32f2f; }
+    .badge.dead { background: #f5f5f5; color: #666; }
+    .badge.top { background: #fff8e1; color: #f57f17; }
+    
+    .loading-container { text-align: center; padding: 40px; font-weight: bold; color: #888; }
+  </style>
+</head>
+<body>
+
+  <!-- 🔒 Login Overlay -->
+  <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
+    <h2 style="margin-bottom: 20px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px;">SAVAGE SHOP</h2>
+    <div style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <h3 style="color: #111; margin-bottom: 20px; text-align: center; font-weight: 900;">ເຂົ້າສູ່ລະບົບ (Dashboard)</h3>
+      <div style="margin-bottom: 15px;">
+        <label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Username</label>
+        <input type="text" id="loginUser" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-weight: 600; color: #111; background: #f9f9f9;">
+      </div>
+      <div style="margin-bottom: 20px;">
+        <label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Password</label>
+        <input type="password" id="loginPass" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-weight: 600; color: #111; background: #f9f9f9;">
+      </div>
+      <button onclick="checkLogin()" style="width: 100%; padding: 14px; background: #00e676; color: #111; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 1rem; text-transform: uppercase;">Login</button>
+      <p id="loginError" style="color: red; font-size: 0.8rem; font-weight: bold; text-align: center; margin-top: 15px; display: none;">❌ Username ຫຼື Password ບໍ່ຖືກຕ້ອງ!</p>
+    </div>
+  </div>
+
+  <div class="app-sidebar">
+    <div class="sidebar-logo">SAVAGE<br>SHOP</div>
+    <div class="menu-btn active" onclick="linkToPage('dashboard')"><span class="material-icons-outlined">dashboard</span><span>ພາບລວມ</span></div>
+    <div class="menu-btn" onclick="linkToPage('admin')">
+      <span class="material-icons-outlined">receipt_long</span><span>ອໍເດີ້</span>
+    </div>
+    <div class="menu-btn" onclick="linkToPage('pos')"><span class="material-icons-outlined">point_of_sale</span><span>POS ບິນ</span></div>
+    <div class="menu-btn" onclick="linkToPage('stock_check')"><span class="material-icons-outlined">inventory</span><span>ສະຕັອກ</span></div>
+    <div class="menu-btn" onclick="linkToPage('stock_in')"><span class="material-icons-outlined">inventory_2</span><span>ສັ່ງຂອງ(PO)</span></div>
+    <div class="menu-btn" onclick="linkToPage('finance')"><span class="material-icons-outlined">money_off</span><span>ລາຍຈ່າຍ</span></div>
+    <div class="menu-btn" onclick="linkToPage('product_manage')"><span class="material-icons-outlined">add_box</span><span>ສິນຄ້າໃໝ່</span></div>
+    
+    <div class="menu-btn" onclick="logoutSavage()" style="margin-top: 30px; color: #ff3d00;">
+      <span class="material-icons-outlined">logout</span><span>ອອກລະບົບ</span>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <div class="page-view">
+      
+      <header class="header">
+        <div style="width: 24px;"></div>
+        <div class="title">SAVAGE ANALYTICS</div>
+        <button onclick="loadDashboardData()" style="background:#00e676; border:none; padding:6px 12px; border-radius:20px; font-weight:800; cursor:pointer;"><span class="material-icons-outlined" style="font-size:14px; vertical-align:middle;">refresh</span> ໂຫຼດໃໝ່</button>
+      </header>
+
+      <div class="main-tabs">
+        <div class="m-tab active" onclick="switchMainTab('overview', this)">ພາບລວມຍອດຂາຍ</div>
+        <div class="m-tab" onclick="switchMainTab('inventory', this)">ວິເຄາະສະຕັອກ</div>
+      </div>
+
+      <div id="tab-overview" class="tab-content active">
+        <div class="time-filter">
+          <div class="filter-tab active" id="filter-today" onclick="setFilter('today')">ມື້ນີ້</div>
+          <div class="filter-tab" id="filter-month" onclick="setFilter('month')">ເດືອນນີ້</div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card full">
+            <div class="kpi-title"><span class="material-icons-outlined" style="font-size: 16px;">payments</span> ຍອດຂາຍລວມ (SALES)</div>
+            <div class="kpi-value" style="color: #ff3d00;" id="kpi-sales">0 ₭</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title"><span class="material-icons-outlined" style="font-size: 16px;">trending_up</span> ກຳໄລສຸດທິ</div>
+            <div class="kpi-value" style="color: #00e676; font-size: 1.1rem;" id="kpi-profit">0 ₭</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title"><span class="material-icons-outlined" style="font-size: 16px;">receipt</span> ຈຳນວນບິນ</div>
+            <div class="kpi-value" id="kpi-orders" style="font-size: 1.2rem;">0</div>
+          </div>
+        </div>
+
+        <div class="chart-section">
+          <div class="chart-title">ແນວໂນ້ມຍອດຂາຍ <span class="material-icons-outlined" style="color: #ccc; font-size: 18px;">bar_chart</span></div>
+          <div class="chart-box" id="chart-wrapper">
+            <canvas id="salesChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-inventory" class="tab-content">
+        
+        <div class="inv-section">
+          <div class="inv-header red">
+            <span class="material-icons-outlined">warning_amber</span> ສິນຄ້າໃກ້ໝົດສະຕັອກ (Low Stock)
+          </div>
+          <div class="inv-list" id="low-stock-list">
+            <div class="loading-container">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>
+          </div>
+        </div>
+
+        <div class="inv-section">
+          <div class="inv-header gold">
+            <span class="material-icons-outlined">workspace_premium</span> สິນຄ້າຂายດີ (Top Sellers)
+          </div>
+          <div class="inv-list" id="top-selling-list">
+            <div class="loading-container">ກຳລັງໂຫຼดຂໍ້ມູນ...</div>
+          </div>
+        </div>
+
+        <div class="inv-section">
+          <div class="inv-header gray">
+            <span class="material-icons-outlined">inventory_2</span> ສິນຄ້າຄ້າງສະຕັອກ (Dead Stock)
+          </div>
+          <div style="padding: 10px 15px; font-size: 0.7rem; color: #888; background: #fafafa; border-bottom: 1px solid #eee;">
+            *ສິນຄ້າທີ່ບໍ່ມີການເຄື່ອນໄຫວຫຼາຍກວ່າ 3 ເດືອນ (ຄວນຈັດໂປຣໂມຊັ່ນ)
+          </div>
+          <div class="inv-list" id="dead-stock-list">
+            <div class="loading-container">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    var dbSales = null;
+    var dbInventory = null;
+    var salesChartInstance = null;
+
+    function linkToPage(pageName) {
+      google.script.run.withSuccessHandler(function(url) {
+        window.top.location.href = url + '?page=' + pageName;
+      }).getScriptUrl();
+    }
+
+    function checkAuth() {
+      if (localStorage.getItem('savage_auth') === 'true') {
+        document.getElementById('loginOverlay').style.display = 'none';
+        loadDashboardData();
+      } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+      }
+    }
+
+    function checkLogin() {
+      var u = document.getElementById('loginUser').value;
+      var p = document.getElementById('loginPass').value;
+      if (u === 'savage' && p === '112233') {
+        localStorage.setItem('savage_auth', 'true');
+        checkAuth();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    function logoutSavage() { localStorage.removeItem('savage_auth'); location.reload(); }
+
+    function switchMainTab(tabId, element) {
+      document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      element.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    function loadDashboardData() {
+      document.getElementById('low-stock-list').innerHTML = '<div class="loading-container">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>';
+      document.getElementById('top-selling-list').innerHTML = '<div class="loading-container">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>';
+      document.getElementById('dead-stock-list').innerHTML = '<div class="loading-container">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>';
+      
+      google.script.run.withSuccessHandler(function(jsonStr) {
+        try {
+          var res = JSON.parse(jsonStr);
+          if(res.success) {
+            dbSales = res.sales;
+            dbInventory = res.inventory;
+            setFilter('today');
+            renderInventory();
+          } else {
+            alert("Error: " + res.error);
+          }
+        } catch(e) { console.error(e); }
+      }).getDashboardData();
+    }
+
+    function setFilter(period) {
+      document.getElementById('filter-today').classList.remove('active');
+      document.getElementById('filter-month').classList.remove('active');
+      document.getElementById('filter-' + period).classList.add('active');
+
+      if (!dbSales) return;
+      const d = dbSales[period];
+      document.getElementById('kpi-sales').innerText = Math.round(d.sales).toLocaleString() + " ₭";
+      document.getElementById('kpi-profit').innerText = Math.round(d.profit).toLocaleString() + " ₭";
+      document.getElementById('kpi-orders').innerText = d.orders;
+
+      renderSalesChart(d.labels, d.data);
+    }
+
+    function renderSalesChart(labels, dataArr) {
+      // Re-create canvas to avoid chart rendering bugs
+      const wrapper = document.getElementById('chart-wrapper');
+      wrapper.innerHTML = '<canvas id="salesChart"></canvas>';
+      const ctx = document.getElementById('salesChart').getContext('2d');
+
+      salesChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ data: dataArr, backgroundColor: '#111', borderRadius: 4, barPercentage: 0.5 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
+      });
+    }
+
+    function renderInventory() {
+      if (!dbInventory) return;
+      
+      // 1. Low Stock
+      let lowHtml = '';
+      if(dbInventory.lowStock && dbInventory.lowStock.length > 0) {
+        dbInventory.lowStock.forEach(item => {
+          lowHtml += `<div class="inv-item"><div class="inv-name">${item.name}</div><div class="badge alert">ເຫຼືອ ${item.qty}</div></div>`;
+        });
+      } else {
+        lowHtml = '<div class="loading-container">ไม่มีสินค้าใกล้หมดสต็อก</div>';
+      }
+      document.getElementById('low-stock-list').innerHTML = lowHtml;
+
+      // 2. Top Sellers
+      let topHtml = '';
+      if(dbInventory.topSellers && dbInventory.topSellers.length > 0) {
+        dbInventory.topSellers.forEach((item, index) => {
+          let medals = ['🥇', '🥈', '🥉'];
+          topHtml += `<div class="inv-item"><div class="inv-name">${medals[index]||'▪️'} ${item.name}</div><div class="badge top">ຂາຍ ${item.sold}</div></div>`;
+        });
+      } else {
+        topHtml = '<div class="loading-container">ไม่มีข้อมูลสินค้าขายดี</div>';
+      }
+      document.getElementById('top-selling-list').innerHTML = topHtml;
+
+      // 3. Dead Stock
+      let deadHtml = '';
+      if(dbInventory.deadStock && dbInventory.deadStock.length > 0) {
+        dbInventory.deadStock.forEach(item => {
+          deadHtml += `<div class="inv-item"><div class="inv-name">${item.name}</div><div class="badge dead">ນິ້ງມາ ${item.idleMonths} ເດືອນ</div></div>`;
+        });
+      } else {
+        deadHtml = '<div class="loading-container">ไม่มีสินค้าค้างสต็อก</div>';
+      }
+      document.getElementById('dead-stock-list').innerHTML = deadHtml;
+    }
+
+    window.onload = checkAuth;
+  </script>
+</body>
+</html>

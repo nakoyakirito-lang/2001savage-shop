@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans Lao', 'Montserrat', sans-serif; }
+    body { background-color: #f0f2f5; color: #111; height: 100vh; display: flex; overflow: hidden; }
+    
+    /* ================= เมนูด้านข้าง (Sidebar) ================= */
+    .app-sidebar { width: 80px; background: #111; display: flex; flex-direction: column; align-items: center; padding-top: 20px; z-index: 10; flex-shrink: 0; }
+    .sidebar-logo { font-weight: 900; font-size: 0.85rem; text-align: center; margin-bottom: 40px; color: #fff; letter-spacing: -0.5px; line-height: 1.2; }
+    .menu-btn { position: relative; width: 54px; height: 54px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; margin-bottom: 20px; cursor: pointer; transition: 0.2s; gap: 4px; }
+    .menu-btn span { font-size: 0.55rem; font-weight: 800; text-align:center; line-height: 1.1; }
+    .menu-btn .material-icons-outlined { font-size: 22px; }
+    .menu-btn:hover { color: #fff; background: #222; }
+    .menu-btn.active { background: #fff; color: #111; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+    .app-body { flex: 1; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .page-view { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 20px; overflow-y: auto; padding-bottom: 50px;}
+
+    /* --- Header --- */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #111; color: white; padding: 15px 20px; border-radius: 16px; flex-shrink: 0;}
+    .header h1 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.2rem; margin: 0; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+
+    /* --- สรุปภาพรวมสต็อก --- */
+    .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; flex-shrink: 0;}
+    .dash-card { background: white; padding: 15px; border-radius: 16px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #eee; }
+    .dash-card.total { border-bottom: 5px solid #2196F3; }
+    .dash-card.low { border-bottom: 5px solid #ff9800; }
+    .dash-card.out { border-bottom: 5px solid #ff3d00; }
+    .dash-title { font-size: 0.75rem; color: #666; font-weight: 800; margin-bottom: 5px; }
+    .dash-value { font-size: 1.6rem; font-weight: 900; color: #111; font-family: 'Montserrat', sans-serif; }
+
+    /* --- เครื่องมือค้นหาและกรอง --- */
+    .toolbar { display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0; flex-wrap: wrap;}
+    .search-box { flex: 1; min-width: 250px; position: relative; }
+    .search-box input { width: 100%; padding: 12px 15px 12px 40px; border-radius: 12px; border: 1px solid #ddd; font-size: 0.9rem; font-weight: 600; outline: none; }
+    .search-box .material-icons-outlined { position: absolute; left: 12px; top: 12px; color: #888; font-size: 20px; }
+    
+    .filter-tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+    .filter-tabs::-webkit-scrollbar { display: none; }
+    .f-tab { padding: 10px 15px; background: white; border: 1px solid #ddd; border-radius: 10px; font-size: 0.8rem; font-weight: 800; color: #666; cursor: pointer; white-space: nowrap; transition: 0.2s;}
+    .f-tab:hover { background: #f5f5f5; }
+    .f-tab.active { background: #111; color: white; border-color: #111; }
+
+    /* --- รายการสต็อก --- */
+    .stock-list { flex: 1; background: white; border-radius: 16px; border: 1px solid #eee; overflow-y: auto; padding: 10px; }
+    .stock-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px dashed #eee; transition: 0.2s; }
+    .stock-item:hover { background: #fafafa; }
+    .stock-item:last-child { border-bottom: none; }
+    
+    .item-info { flex: 1; padding-right: 15px; }
+    .item-name { font-weight: 800; font-size: 0.9rem; color: #111; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .item-meta { font-size: 0.75rem; color: #888; font-weight: 600; display: flex; gap: 10px; flex-wrap: wrap;}
+    
+    .stock-badge-container { text-align: right; min-width: 80px; }
+    .stock-qty { font-family: 'Montserrat', sans-serif; font-size: 1.3rem; font-weight: 900; }
+    .stock-status { font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 20px; display: inline-block; margin-top: 4px; }
+    
+    /* สีสถานะสต็อก */
+    .status-good .stock-qty { color: #2e7d32; }
+    .status-good .stock-status { background: #e8f5e9; color: #2e7d32; }
+    
+    .status-low .stock-qty { color: #e65100; }
+    .status-low .stock-status { background: #fff3e0; color: #e65100; }
+    
+    .status-out .stock-qty { color: #c62828; }
+    .status-out .stock-status { background: #ffebee; color: #c62828; }
+  </style>
+</head>
+<body>
+
+  <!-- 🔒 Login Overlay -->
+  <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
+    <h2 style="margin-bottom: 20px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px;">SAVAGE SHOP</h2>
+    <div style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <h3 style="color: #111; margin-bottom: 20px; text-align: center; font-weight: 900;">ເຂົ້າສູ່ລະບົບ (Stock Check)</h3>
+      <div style="margin-bottom: 15px;">
+        <label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Username</label>
+        <input type="text" id="loginUser" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-weight: 600; color: #111; background: #f9f9f9;">
+      </div>
+      <div style="margin-bottom: 20px;">
+        <label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Password</label>
+        <input type="password" id="loginPass" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-weight: 600; color: #111; background: #f9f9f9;">
+      </div>
+      <button onclick="checkLogin()" style="width: 100%; padding: 14px; background: #00e676; color: #111; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 1rem; text-transform: uppercase;">Login</button>
+      <p id="loginError" style="color: red; font-size: 0.8rem; font-weight: bold; text-align: center; margin-top: 15px; display: none;">❌ Username ຫຼື Password ບໍ່ຖືກຕ້ອງ!</p>
+    </div>
+  </div>
+
+  <div class="app-sidebar">
+    <div class="sidebar-logo">SAVAGE<br>SHOP</div>
+    <div class="menu-btn" onclick="linkToPage('dashboard')"><span class="material-icons-outlined">dashboard</span><span>ພາບລວມ</span></div>
+    <div class="menu-btn" onclick="linkToPage('admin')">
+      <span class="material-icons-outlined">receipt_long</span><span>ອໍເດີ້</span>
+    </div>
+    <div class="menu-btn" onclick="linkToPage('pos')"><span class="material-icons-outlined">point_of_sale</span><span>POS ບິນ</span></div>
+    <div class="menu-btn active" onclick="linkToPage('stock_check')"><span class="material-icons-outlined">inventory</span><span>ສະຕັອກ</span></div>
+    <div class="menu-btn" onclick="linkToPage('stock_in')"><span class="material-icons-outlined">inventory_2</span><span>ສັ່ງຂອງ(PO)</span></div>
+    <div class="menu-btn" onclick="linkToPage('finance')"><span class="material-icons-outlined">money_off</span><span>ລາຍຈ່າຍ</span></div>
+    <div class="menu-btn" onclick="linkToPage('product_manage')"><span class="material-icons-outlined">add_box</span><span>ສິນຄ້າໃໝ່</span></div>
+    
+    <div class="menu-btn" onclick="logoutSavage()" style="margin-top: 30px; color: #ff3d00;">
+      <span class="material-icons-outlined">logout</span><span>ອອກລະບົບ</span>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <div class="page-view">
+      
+      <div class="header">
+        <h1><span class="material-icons-outlined">inventory</span> ກວດສະຕັອກ (STOCK CHECK)</h1>
+        <button onclick="loadStockData()" style="background:#00e676; border:none; padding:8px 15px; border-radius:20px; font-weight:800; cursor:pointer;"><span class="material-icons-outlined" style="font-size:16px; vertical-align:middle;">refresh</span> ໂຫຼດໃໝ່</button>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-card total">
+          <div class="dash-title">ສິນຄ້າທັງໝົດ</div>
+          <div class="dash-value" id="count-total">0</div>
+        </div>
+        <div class="dash-card low">
+          <div class="dash-title">ໃກ້ໝົດ (≤ 5)</div>
+          <div class="dash-value" id="count-low" style="color:#ff9800;">0</div>
+        </div>
+        <div class="dash-card out">
+          <div class="dash-title">ໝົດສະຕັອກ (0)</div>
+          <div class="dash-value" id="count-out" style="color:#ff3d00;">0</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="material-icons-outlined">search</span>
+          <input type="text" id="searchInput" placeholder="ຄົ້ນຫາຊື່ສິນຄ້າ, ລະຫັດ ຫຼື ລຸ້ນລົດ..." onkeyup="applyFilter()">
+        </div>
+        <div class="filter-tabs">
+          <button class="f-tab active" id="tab-all" onclick="setFilter('all')">ທັງໝົດ</button>
+          <button class="f-tab" id="tab-low" onclick="setFilter('low')">⚠️ ໃກ້ໝົດ</button>
+          <button class="f-tab" id="tab-out" onclick="setFilter('out')">❌ ໝົດສະຕັອກ</button>
+        </div>
+      </div>
+
+      <div class="stock-list" id="stock-container">
+        <div style="text-align:center; padding:50px; color:#999; font-weight:700;">
+          <span class="material-icons-outlined" style="font-size: 40px; animation: spin 1s linear infinite;">sync</span><br>ກຳລັງໂຫຼດຂໍ້ມູນສະຕັອກ...
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    var globalProducts = [];
+    var currentFilter = 'all';
+
+    function linkToPage(pageName) {
+      google.script.run.withSuccessHandler(function(url) {
+        window.top.location.href = url + '?page=' + pageName;
+      }).getScriptUrl();
+    }
+
+    function checkAuth() {
+      if (localStorage.getItem('savage_auth') === 'true') {
+        document.getElementById('loginOverlay').style.display = 'none';
+        loadStockData();
+      } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+      }
+    }
+
+    function checkLogin() {
+      var u = document.getElementById('loginUser').value;
+      var p = document.getElementById('loginPass').value;
+      if (u === 'savage' && p === '112233') {
+        localStorage.setItem('savage_auth', 'true');
+        checkAuth();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    function logoutSavage() { localStorage.removeItem('savage_auth'); location.reload(); }
+
+    function loadStockData() {
+      document.getElementById('stock-container').innerHTML = '<div style="text-align:center; padding:50px; color:#999; font-weight:700;"><span class="material-icons-outlined" style="font-size: 40px; animation: spin 1s linear infinite;">sync</span><br>ກຳລັງໂຫຼດຂໍ້ມູນສະຕັອກ...</div>';
+      google.script.run.withSuccessHandler(function(jsonStr) {
+        try {
+          var res = JSON.parse(jsonStr);
+          if(res.success) {
+            globalProducts = res.data || [];
+            updateSummary();
+            applyFilter();
+          } else {
+            alert("Error: " + res.error);
+          }
+        } catch(e) { console.error(e); }
+      }).getPosProducts();
+    }
+
+    function updateSummary() {
+      var tAll = 0, tLow = 0, tOut = 0;
+      for (var i = 0; i < globalProducts.length; i++) {
+        var qty = parseFloat(globalProducts[i].stock) || 0;
+        tAll++;
+        if (qty === 0) tOut++;
+        else if (qty <= 5) tLow++; 
+      }
+      document.getElementById('count-total').innerText = tAll;
+      document.getElementById('count-low').innerText = tLow;
+      document.getElementById('count-out').innerText = tOut;
+    }
+
+    function setFilter(status) {
+      currentFilter = status;
+      document.querySelectorAll('.f-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + status).classList.add('active');
+      applyFilter();
+    }
+
+    function applyFilter() {
+      var keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+      var container = document.getElementById('stock-container');
+      var html = '';
+      var countShow = 0;
+
+      for (var i = 0; i < globalProducts.length; i++) {
+        var p = globalProducts[i];
+        var qty = parseFloat(p.stock) || 0;
+        
+        var matchTab = false;
+        if (currentFilter === 'all') matchTab = true;
+        if (currentFilter === 'low' && qty > 0 && qty <= 5) matchTab = true;
+        if (currentFilter === 'out' && qty === 0) matchTab = true;
+
+        if (!matchTab) continue;
+
+        var matchSearch = true;
+        if (keyword !== '') {
+          var searchStr = (p.name + " " + p.id + " " + p.model).toLowerCase();
+          if (!searchStr.includes(keyword)) matchSearch = false;
+        }
+
+        if (!matchSearch) continue;
+
+        countShow++;
+
+        var statusClass = "status-good";
+        var statusText = "ປົກກະຕິ";
+        if (qty === 0) { statusClass = "status-out"; statusText = "ໝົດສະຕັອກ"; }
+        else if (qty <= 5) { statusClass = "status-low"; statusText = "ໃກ້ໝົດ"; }
+
+        var cleanName = p.name.split('[')[0].trim();
+
+        html += `
+          <div class="stock-item ${statusClass}">
+            <div class="item-info">
+              <div class="item-name">${cleanName}</div>
+              <div class="item-meta">
+                <span><span class="material-icons-outlined" style="font-size:12px; vertical-align:middle;">qr_code</span> ${p.id}</span>
+                <span style="color: #2196F3;"><span class="material-icons-outlined" style="font-size:12px; vertical-align:middle;">directions_car</span> ລຸ້ນ: ${p.model}</span>
+                <span>💰 ₭${p.price.toLocaleString()}</span>
+              </div>
+            </div>
+            <div class="stock-badge-container">
+              <div class="stock-qty">${qty}</div>
+              <div class="stock-status">${statusText}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (countShow === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:40px; color:#999; font-weight:700;">ບໍ່ພົບລາຍການສິນຄ້າ</div>';
+      } else {
+        container.innerHTML = html;
+      }
+    }
+
+    window.onload = checkAuth;
+  </script>
+</body>
+</html>

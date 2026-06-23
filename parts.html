@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: #ffffff; color: #111; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; padding-bottom: 60px; font-family: 'Noto Sans Lao', 'Montserrat', sans-serif !important; }
+    .material-icons-outlined { font-family: 'Material Icons Outlined' !important; }
+    a { text-decoration: none; color: inherit; }
+    
+    /* --- Header (ย่อขนาด) --- */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: white; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #f0f0f0; }
+    .header .logo { font-family: 'Montserrat', sans-serif; font-weight: 900; font-style: italic; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase; }
+    .icon-btn { background: none; border: none; cursor: pointer; color: #111; display: flex; align-items: center; }
+    .icon-btn .material-icons-outlined { font-size: 22px !important; }
+    
+    /* --- Title & Breadcrumb (ย่อขนาด) --- */
+    .breadcrumb { font-family: 'Montserrat', sans-serif; font-size: 0.6rem; font-weight: 700; color: #999; letter-spacing: 1px; padding: 15px 15px 5px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; text-transform: uppercase; }
+    .breadcrumb a { color: #999; } .breadcrumb a:hover { color: #111; } .breadcrumb .active-crumb { color: #111; }
+    .page-title { font-family: 'Montserrat', sans-serif; font-size: 1.8rem; font-weight: 900; line-height: 1.1; margin: 0 15px 10px; text-transform: uppercase; color: #111; }
+    .page-desc { font-family: 'Montserrat', sans-serif; font-size: 0.6rem; color: #666; font-weight: 700; letter-spacing: 0.5px; line-height: 1.4; text-transform: uppercase; margin: 0 15px 20px; max-width: 95%; }
+    
+    /* --- Filter (ลด Padding) --- */
+    .filter-scroll { display: flex; overflow-x: auto; gap: 8px; padding: 0 15px; margin-bottom: 20px; scrollbar-width: none; }
+    .filter-scroll::-webkit-scrollbar { display: none; } 
+    .filter-btn { font-family: 'Montserrat', sans-serif; padding: 8px 14px; border: 1px solid #ddd; background: white; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.5px; white-space: nowrap; cursor: pointer; text-transform: uppercase; border-radius: 4px; }
+    .filter-btn.active { background: #111; color: white; border-color: #111; }
+    
+    /* --- Grid Container (ย่อขนาดช่องไฟ) --- */
+    .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 15px 25px; }
+    .card { border-radius: 12px; border: 1px solid #f0f0f0; background: #fff; display: flex; flex-direction: column; position: relative; padding-bottom: 10px; overflow: hidden; }
+    .img-box { background: #f8f8f8; height: 110px; display: flex; align-items: center; justify-content: center; padding: 10px; }
+    .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+    .badge-count { position: absolute; top: 0; right: 0; background: #111; color: white; font-family: 'Montserrat', sans-serif; font-size: 0.5rem; font-weight: 800; padding: 4px 8px; letter-spacing: 0.5px; z-index: 2; border-bottom-left-radius: 8px; }
+    .card-info { padding: 10px 10px 0; display: flex; flex-direction: column; flex-grow: 1; }
+    .card-cat { font-family: 'Montserrat', sans-serif; font-size: 0.5rem; color: #999; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .card-title { font-size: 0.75rem; font-weight: 700; line-height: 1.3; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-price-row { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+    .card-price { font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 900; color: #111; }
+    .card-check { color: #ccc; font-size: 0.85rem; } .card-check.active-check { color: #111; }
+    
+    /* --- Bottom Nav (ย่อขนาดและแบ่ง 3 ส่วน) --- */
+    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: white; display: flex; justify-content: space-between; padding: 0; border-top: 1px solid #eee; z-index: 100; }
+    .nav-link { width: 33.33%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; font-family: 'Montserrat', sans-serif; font-size: 0.5rem; font-weight: 800; letter-spacing: 0.5px; padding: 8px 0; gap: 2px; position: relative; }
+    .nav-link.active { background: #111; color: white; } 
+    .nav-link.active .material-icons-outlined { color: white; }
+    .nav-link .material-icons-outlined { font-size: 20px !important; }
+    .nav-icon-box { display: inline-block; position: relative; }
+  </style>
+</head>
+<body>
+
+  <? 
+    var _model = (typeof selectedModel !== 'undefined') ? selectedModel : '';
+    var _groupsData = (typeof groupsData !== 'undefined') ? groupsData : [];
+    var _partsData = (typeof partsData !== 'undefined') ? partsData : [];
+  ?>
+
+  <header class="header">
+    <a href="<?= getScriptUrl() ?>?page=home" class="icon-btn" target="_top">
+      <span class="material-icons-outlined">arrow_back</span>
+    </a>
+    <div class="logo">SAVAGE SHOP</div>
+    <button class="icon-btn" style="position: relative;" onclick="window.top.location.href='<?= getScriptUrl() ?>?page=cart'">
+      <span class="material-icons-outlined">shopping_cart</span>
+      <span id="cart-badge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ff3d00; color:white; border-radius:50%; font-size:9px; font-weight:bold; width: 16px; height: 16px; line-height: 16px; text-align: center;">0</span>
+    </button>
+  </header>
+  
+  <div class="breadcrumb">
+    <a href="<?= getScriptUrl() ?>?page=home" target="_top">HOME</a><span>›</span>
+    <span class="active-crumb"><?= _model ? _model : 'PARTS' ?></span>
+  </div>
+
+  <h1 class="page-title"><?= _model ? _model + '<br>PARTS' : 'PARTS' ?></h1>
+  <p class="page-desc">PRECISION ENGINEERED AFTERMARKET COMPONENTS FOR <?= _model ?> SERIES.</p>
+
+  <div class="filter-scroll">
+    <div class="filter-btn active">ALL SYSTEMS</div>
+    <div class="filter-btn">BODY & AERO</div>
+  </div>
+
+  <div class="grid-container">
+    <? 
+    var hasItems = false;
+    function getImg(url) {
+      if (!url) return 'https://via.placeholder.com/200?text=No+Image';
+      var id = ''; var match = url.match(/(?:id=|\/file\/d\/)([a-zA-Z0-9-_]+)/);
+      if (match && match[1]) id = match[1];
+      return id ? 'https://lh3.googleusercontent.com/d/' + id : url;
+    }
+
+    for (var i = 0; i < _groupsData.length; i++) {
+      var rawGroupModel = _groupsData[i]['Moto Model'] || _groupsData[i]['Model'] || '';
+      var models = rawGroupModel.toString().split(',').map(function(s){ return s.trim() });
+      
+      if (_model === '' || models.indexOf(_model) !== -1) {
+        hasItems = true;
+        var gName = _groupsData[i]['Group'] || 'ບໍ່ລະບຸ';
+        var gPrice = _groupsData[i]['Price'] || _groupsData[i]['ລາຄາ'] || '0';
+        var gImg = _groupsData[i]['Image_URL'] || _groupsData[i]['image Group'] || '';
+
+        var itemCount = 0;
+        for(var k = 0; k < _partsData.length; k++) {
+          var checkGroup = _partsData[k]['Group'] || '';
+          var rawPartModel = _partsData[k]['Moto Model'] || _partsData[k]['Model'] || '';
+          var checkModels = rawPartModel.toString().split(',').map(function(s){ return s.trim() });
+          if (checkGroup === gName && (_model === '' || checkModels.indexOf(_model) !== -1)) itemCount++;
+        }
+    ?>
+        <a class="card" href="<?= getScriptUrl() ?>?page=detail&model=<?= encodeURIComponent(_model) ?>&group=<?= encodeURIComponent(gName) ?>" target="_top">
+          <div class="badge-count"><?= itemCount ?> OPTIONS</div>
+          <div class="img-box"><img src="<?= getImg(gImg) ?>" onerror="this.src='https://via.placeholder.com/200?text=No+Image'"></div>
+          <div class="card-info">
+            <div class="card-cat"><?= _model ?></div>
+            <div class="card-title"><?= gName ?></div>
+            <div class="card-price-row">
+              <div class="card-price"><?= Number(gPrice).toLocaleString() ?> ₭</div>
+              <span class="material-icons-outlined card-check">check_circle</span>
+            </div>
+          </div>
+        </a>
+    <? 
+      }
+    }
+    if (!hasItems) { ?>
+      <div style="grid-column: span 2; text-align: center; padding: 40px; color: #999; font-size: 0.8rem;">ບໍ່ມີຂໍ້ມູນອາໄຫຼ່ໃນຂະນະນີ້</div>
+    <? } ?>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="<?= getScriptUrl() ?>?page=home" target="_top" class="nav-link"><div class="nav-icon-box"><span class="material-icons-outlined">home</span></div><span>HOME</span></a>
+   
+   <a href="<?= getScriptUrl() ?>?page=orders" target="_top" class="nav-link">
+      <div class="nav-icon-box">
+        <span class="material-icons-outlined">receipt_long</span>
+        <span id="nav-cart-badge" style="display:none; position:absolute; top:-4px; right:-8px; background:#ff3d00; color:white; border-radius:50%; font-size:9px; font-weight:bold; min-width: 16px; height: 16px; line-height: 16px; text-align: center; padding: 0 4px; z-index: 10;">0</span>
+      </div>
+      <span>ORDERS</span>
+    </a>
+    <a href="<?= getScriptUrl() ?>?page=profile" target="_top" class="nav-link"><div class="nav-icon-box"><span class="material-icons-outlined">person</span></div><span>PROFILE</span></a>
+  </nav>
+
+<script>
+    function updateCartBadge() {
+      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
+      
+      var headerBadge = document.getElementById('cart-badge');
+      var navBadge = document.getElementById('nav-cart-badge');
+      
+      if (cart.length > 0) {
+        var totalQty = 0;
+        for (var i = 0; i < cart.length; i++) { totalQty += cart[i].qty; }
+        
+        if (headerBadge) { headerBadge.innerText = totalQty; headerBadge.style.display = 'block'; }
+        if (navBadge) { navBadge.innerText = totalQty; navBadge.style.display = 'block'; }
+      } else {
+        if (headerBadge) headerBadge.style.display = 'none';
+        if (navBadge) navBadge.style.display = 'none';
+      }
+    }
+    
+    updateCartBadge();
+  </script>
+</body>
+</html>

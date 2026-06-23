@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans Lao', 'Montserrat', sans-serif; }
+    body { background-color: #f0f2f5; color: #111; height: 100vh; display: flex; overflow: hidden; }
+    
+    /* เมนูด้านข้าง */
+    .app-sidebar { width: 80px; background: #111; display: flex; flex-direction: column; align-items: center; padding-top: 20px; z-index: 10; }
+    .sidebar-logo { font-weight: 900; font-size: 0.85rem; text-align: center; margin-bottom: 40px; color: #fff; letter-spacing: -0.5px; line-height: 1.2; }
+    .menu-btn { position: relative; width: 54px; height: 54px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; margin-bottom: 20px; cursor: pointer; transition: 0.2s; gap: 4px; }
+    .menu-btn span { font-size: 0.55rem; font-weight: 800; text-align:center; line-height: 1.1; }
+    .menu-btn .material-icons-outlined { font-size: 22px; }
+    .menu-btn:hover { color: #fff; background: #222; }
+    .menu-btn.active { background: #fff; color: #111; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+    .app-body { flex: 1; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .page-view { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 20px; overflow-y: auto;}
+
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #111; color: white; padding: 15px 20px; border-radius: 16px; flex-shrink: 0;}
+    .header h1 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.2rem; margin: 0; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+
+    /* Time Filters (ตัวกรองเวลา) */
+    .time-filter { display: flex; gap: 10px; margin-bottom: 20px; background: white; padding: 10px; border-radius: 12px; border: 1px solid #eee; overflow-x: auto; scrollbar-width: none; flex-shrink: 0;}
+    .time-filter::-webkit-scrollbar { display: none; }
+    .filter-tab { flex: 1; padding: 10px 15px; text-align: center; border-radius: 8px; font-weight: 800; font-size: 0.75rem; color: #666; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+    .filter-tab:hover { background: #f5f5f5; }
+    .filter-tab.active { background: #111; color: white; }
+
+    /* Dashboard Cards */
+    .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; flex-shrink: 0;}
+    .dash-card { background: white; padding: 20px 15px; border-radius: 16px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #eee; }
+    .dash-card.total { border-bottom: 5px solid #ff3d00; grid-column: span 2;}
+    .dash-title { font-size: 0.8rem; color: #666; font-weight: 800; margin-bottom: 5px; }
+    .dash-value { font-size: 1.8rem; font-weight: 900; color: #ff3d00; font-family: 'Montserrat', sans-serif; }
+
+    /* แผงแสดงกราฟแท่ง */
+    .chart-panel { background: white; padding: 20px; border-radius: 16px; border: 1px solid #eee; margin-bottom: 20px; flex-shrink: 0;}
+    .chart-title { font-size: 0.95rem; font-weight: 900; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .chart-container { position: relative; height: 250px; width: 100%; }
+
+    /* Form & History Layout */
+    .content-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; flex-shrink: 0; min-height: 400px;}
+    
+    .panel { background: white; padding: 20px; border-radius: 16px; border: 1px solid #eee; overflow-y: auto; display: flex; flex-direction: column; }
+    .panel-title { margin-bottom: 15px; font-size: 0.95rem; font-weight: 900; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+
+    /* Form */
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: 800; color: #555; margin-bottom: 5px; }
+    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; font-weight: 600; outline: none; }
+    .btn-save { width: 100%; background: #111; color: white; padding: 14px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; margin-top: 10px; font-family: 'Montserrat', sans-serif; text-transform: uppercase; }
+    
+    /* Report Section */
+    .report-item { margin-bottom: 15px; }
+    .report-header { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; margin-bottom: 6px; color: #444; }
+    .report-bar-bg { width: 100%; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+    .report-bar-fill { height: 100%; background: #ff3d00; border-radius: 4px; transition: width 0.5s ease; }
+
+    /* History Section */
+    .history-list { flex: 1; overflow-y: auto; padding-right: 5px; }
+    .trans-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #eee; }
+    .trans-icon { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #ffebee; color: #c62828; margin-right: 12px; }
+    .trans-info { flex: 1; }
+    .trans-title { font-weight: 800; font-size: 0.8rem; color: #111; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+    .trans-type { font-size: 0.65rem; color: #fff; background: #999; padding: 2px 6px; border-radius: 10px; display: inline-block; margin-top: 4px; font-weight: 700; }
+    .trans-date { font-size: 0.65rem; color: #888; font-weight: 600; }
+    .trans-amount { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.95rem; color: #c62828; }
+  </style>
+</head>
+<body>
+
+  <!-- 🔒 Login Overlay -->
+  <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
+    <h2 style="margin-bottom: 20px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px;">SAVAGE SHOP</h2>
+    <div style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <h3 style="color: #111; margin-bottom: 20px; text-align: center; font-weight: 900;">ເຂົ້າສູ່ລະບົບ (Finance)</h3>
+      <div style="margin-bottom: 15px;">
+        <label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Username</label>
+        <input type="text" id="loginUser" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-weight: 600; color: #111; background: #f9f9f9;">
+      </div>
+      <div style="margin-bottom: 20px;">
+        <label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Password</label>
+        <input type="password" id="loginPass" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-weight: 600; color: #111; background: #f9f9f9;">
+      </div>
+      <button onclick="checkLogin()" style="width: 100%; padding: 14px; background: #00e676; color: #111; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 1rem; text-transform: uppercase;">Login</button>
+      <p id="loginError" style="color: red; font-size: 0.8rem; font-weight: bold; text-align: center; margin-top: 15px; display: none;">❌ Username ຫຼື Password ບໍ່ຖືກຕ້ອງ!</p>
+    </div>
+  </div>
+
+  <div class="app-sidebar">
+    <div class="sidebar-logo">SAVAGE<br>SHOP</div>
+    <div class="menu-btn" onclick="linkToPage('dashboard')"><span class="material-icons-outlined">dashboard</span><span>ພາບລວມ</span></div>
+    <div class="menu-btn" onclick="linkToPage('admin')">
+      <span class="material-icons-outlined">receipt_long</span><span>ອໍເດີ້</span>
+    </div>
+    <div class="menu-btn" onclick="linkToPage('pos')"><span class="material-icons-outlined">point_of_sale</span><span>POS ບິນ</span></div>
+    <div class="menu-btn" onclick="linkToPage('stock_check')"><span class="material-icons-outlined">inventory</span><span>ສະຕັອກ</span></div>
+    <div class="menu-btn" onclick="linkToPage('stock_in')"><span class="material-icons-outlined">inventory_2</span><span>ສັ່ງຂອງ(PO)</span></div>
+    <div class="menu-btn active" onclick="linkToPage('finance')"><span class="material-icons-outlined">money_off</span><span>ລາຍຈ່າຍ</span></div>
+    <div class="menu-btn" onclick="linkToPage('product_manage')"><span class="material-icons-outlined">add_box</span><span>ສິນຄ້າໃໝ່</span></div>
+    
+    <div class="menu-btn" onclick="logoutSavage()" style="margin-top: 30px; color: #ff3d00;">
+      <span class="material-icons-outlined">logout</span><span>ອອກລະບົບ</span>
+    </div>
+  </div>
+
+  <div class="app-sidebar-space" style="width: 80px; flex-shrink: 0;"></div>
+
+  <div class="app-body">
+    <div class="page-view">
+      <div class="header">
+        <h1><span class="material-icons-outlined">bar_chart</span> ລາຍງານຄ່າໃຊ້ຈ່າຍ (EXPENSES)</h1>
+        <button onclick="loadfinanceData()" style="background:#00e676; border:none; padding:8px 15px; border-radius:20px; font-weight:800; cursor:pointer;"><span class="material-icons-outlined" style="font-size:16px; vertical-align:middle;">refresh</span> ໂຫຼດໃໝ່</button>
+      </div>
+
+      <div class="time-filter">
+        <div class="filter-tab active" id="filter-today" onclick="setFilter('today')">ມື້ນີ້</div>
+        <div class="filter-tab" id="filter-week" onclick="setFilter('week')">อาທິດນີ້</div>
+        <div class="filter-tab" id="filter-month" onclick="setFilter('month')">ເດືອນນີ້</div>
+        <div class="filter-tab" id="filter-quarter" onclick="setFilter('quarter')">ໄຕມາດນີ້</div>
+        <div class="filter-tab" id="filter-year" onclick="setFilter('year')">ປີນີ້</div>
+        <div class="filter-tab" id="filter-all" onclick="setFilter('all')">ທັງໝົດ</div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-card total">
+          <div class="dash-title" id="display-filter-title">ຈ່າຍມື້ນີ້ (TODAY)</div>
+          <div class="dash-value" id="total-filtered">0 ₭</div>
+        </div>
+      </div>
+
+      <div class="chart-panel">
+        <div class="chart-title"><span class="material-icons-outlined">analytics</span> ແນວໂນ້ມຄ່າໃຊ້ຈ່າຍ</div>
+        <div class="chart-container">
+          <canvas id="expenseChart"></canvas>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="panel">
+          <div class="panel-title"><span class="material-icons-outlined">add_circle</span> ບັນທຶກຄ່າໃຊ້ຈ່າຍ</div>
+          <div class="form-group">
+            <label>ວັນທີ (Date)</label>
+            <input type="date" id="fi-date">
+          </div>
+          <div class="form-group">
+            <label>ປະເພດລາຍຈ່າຍ (Category)</label>
+            <select id="fi-type">
+              <option value="ຄ່າຕົ้นທຶນສິນຄ້າ">📦 ຄ່າຕົ້ນທຶນສິນຄ້າ (Cost of Goods)</option>
+              <option value="ຄ່າອຸປະກອນແພັກ">🏷️ ຄ່າອຸປະກອນແພັກ (Packaging)</option>
+              <option value="ຄ່າขົນສົ່ງ">🚚 ຄ່າຂົນສົ່ງຕີກັບ (Shipping)</option>
+              <option value="ຄ່າໂຄສະນາ">📈 ຄ່າໂຄສະນາ/ຍິງແອັດ (Ads)</option>
+              <option value="ຄ່າຈ້າງພະນັກງານ">👥 ຄ່າຈ້າງພະນັກງານ (Salaries)</option>
+              <option value="ຄ່າທຳນຽມແອັບ">💳 ຄ່າທຳນຽມ/ທະນາຄານ (Fees)</option>
+              <option value="ຄ່າໃຊ້ຈ່າຍທົ່ວໄປ">🛠️ ຄ່າໃຊ້ຈ່າຍທົ່ວໄປ (Misc / Others)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>ຈຳນວນເງິນ ₭ (Amount)</label>
+            <input type="number" id="fi-amount" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>ລາຍລະອຽดເພີ່ມເຕີມ (Note)</label>
+            <input type="text" id="fi-note" placeholder="ເຊັ່ນ: ຊື້ກ່ອງໄປສະນີ, ຈ່າຍค່າແອັດ...">
+          </div>
+          <button class="btn-save" id="btn-save" onclick="saveExpense()">ບັນທຶກລາຍຈ່າຍ</button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><span class="material-icons-outlined">pie_chart</span> ລາຍງານແຍກປະເພດ (REPORT)</div>
+          <div id="expense-report-list" style="flex:1; overflow-y:auto; padding-right:5px;">
+            <div style="text-align:center; padding:30px; color:#999;">ກຳລັງປະມວນຜົນ...</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><span class="material-icons-outlined">history</span> ປະຫວັດລາຍຈ່າຍ (HISTORY)</div>
+          <div class="history-list" id="finance-list">
+            <div style="text-align:center; padding:30px; color:#999;"><span class="material-icons-outlined" style="animation: spin 1s linear infinite;">sync</span> ກຳລັງໂຫຼດ...</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var globalFinanceData = [];
+    var currentFilter = 'today';
+    var expenseChartInstance = null;
+
+    function linkToPage(pageName) {
+      google.script.run.withSuccessHandler(function(url) {
+        window.top.location.href = url + '?page=' + pageName;
+      }).getScriptUrl();
+    }
+
+    function checkAuth() {
+      if (localStorage.getItem('savage_auth') === 'true') {
+        document.getElementById('loginOverlay').style.display = 'none';
+        loadfinanceData();
+      } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+      }
+    }
+
+    function checkLogin() {
+      var u = document.getElementById('loginUser').value;
+      var p = document.getElementById('loginPass').value;
+      if (u === 'savage' && p === '112233') {
+        localStorage.setItem('savage_auth', 'true');
+        checkAuth();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    function logoutSavage() { localStorage.removeItem('savage_auth'); location.reload(); }
+
+    var localNow = new Date();
+    var localDateString = localNow.getFullYear() + '-' + 
+                          String(localNow.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(localNow.getDate()).padStart(2, '0');
+    document.getElementById('fi-date').value = localDateString;
+
+    function loadfinanceData() {
+      document.getElementById('finance-list').innerHTML = '<div style="text-align:center; padding:30px; color:#999;">ກຳລັງໂຫຼດ...</div>';
+      google.script.run.withSuccessHandler(function(data) {
+        globalFinanceData = data || [];
+        applyFilter(); 
+      }).getfinanceData();
+    }
+
+    function setFilter(period) {
+      currentFilter = period;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('filter-' + period).classList.add('active');
+      
+      var titles = {
+        'today': 'ຈ່າຍມື້ນີ້ (TODAY)',
+        'week': 'ຈ່າຍອາທິດນີ້ (THIS WEEK)',
+        'month': 'ຈ່າຍເດືອນນີ້ (THIS MONTH)',
+        'quarter': 'ຈ່າຍໄຕມາດນີ້ (THIS QUARTER)',
+        'year': 'ຈ່າຍປີນີ້ (THIS YEAR)',
+        'all': 'ຍອດຈ່າຍທັງໝົດ (ALL TIME)'
+      };
+      document.getElementById('display-filter-title').innerText = titles[period];
+
+      applyFilter();
+    }
+
+    function parseDateStr(dateStr) {
+      var s = String(dateStr).trim();
+      var monthMap = {"jan":0, "feb":1, "mar":2, "apr":3, "may":4, "jun":5, "jul":6, "aug":7, "sep":8, "oct":9, "nov":10, "dec":11};
+      
+      var partsDash = s.split('-');
+      if (partsDash.length === 3 && isNaN(partsDash[1])) {
+        var d = parseInt(partsDash[0], 10);
+        var mStr = partsDash[1].toLowerCase().substring(0,3);
+        var y = parseInt(partsDash[2], 10);
+        if (monthMap[mStr] !== undefined) return new Date(y, monthMap[mStr], d);
+      }
+
+      var partsSlash = s.split('/');
+      if (partsSlash.length === 3) return new Date(partsSlash[2], partsSlash[1] - 1, partsSlash[0]);
+      
+      if (partsDash.length >= 3 && !isNaN(partsDash[1])) {
+         var d = partsDash[2].substring(0, 2); 
+         return new Date(partsDash[0], partsDash[1] - 1, d);
+      }
+      return new Date(s);
+    }
+
+    function renderExpenseChart(chartLabels, chartDataArr) {
+      const ctx = document.getElementById('expenseChart').getContext('2d');
+      if (expenseChartInstance) expenseChartInstance.destroy();
+
+      expenseChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { 
+          labels: chartLabels, 
+          datasets: [{ 
+            data: chartDataArr, 
+            backgroundColor: '#ff3d00', 
+            borderRadius: 6, 
+            barPercentage: 0.6 
+          }] 
+        },
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false, 
+          plugins: { 
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) { return context.parsed.y.toLocaleString() + ' ₭'; }
+              }
+            }
+          }, 
+          scales: { 
+            y: { 
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  if (value >= 1000000) return (value / 1000000) + 'M';
+                  if (value >= 1000) return (value / 1000) + 'k';
+                  return value;
+                }
+              }
+            }, 
+            x: { 
+              grid: { display: false },
+              ticks: {
+                autoSkip: false,
+                maxRotation: 45,
+                minRotation: 45,
+                font: { size: 10 }
+              }
+            } 
+          } 
+        }
+      });
+    }
+
+    function applyFilter() {
+      var list = document.getElementById('finance-list');
+      var reportList = document.getElementById('expense-report-list');
+      
+      var filteredTotal = 0;
+      var categoryTotals = {};
+      var filteredHistoryHtml = '';
+
+      var now = new Date();
+      now.setHours(0,0,0,0);
+      var startOfToday = new Date(now);
+      var startOfWeek = new Date(now);
+      var day = startOfWeek.getDay() || 7; 
+      startOfWeek.setDate(startOfWeek.getDate() - day + 1);
+      var startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      var currentQuarter = Math.floor(now.getMonth() / 3);
+      var startOfQuarter = new Date(now.getFullYear(), currentQuarter * 3, 1);
+      var startOfYear = new Date(now.getFullYear(), 0, 1);
+
+      var chartLabels = [];
+      var graphDataMap = {};
+      var monthNamesLao = ["ມ.ກ.", "ກ.ພ.", "ມ.ນ.", "ມ.ສ.", "ພ.ພ.", "ມິ.ຖ.", "ກ.ລ.", "ສ.ຫ.", "ກ.ຍ.", "ຕ.ລ.", "ພ.ຈ.", "ທ.ວ."];
+      
+      function formatDayKey(d) {
+        return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0');
+      }
+      function formatMonthKey(d) {
+        return monthNamesLao[d.getMonth()] + ' ' + String(d.getFullYear()).substring(2);
+      }
+
+      if (currentFilter === 'today') {
+        var k = formatDayKey(startOfToday);
+        chartLabels.push(k);
+        graphDataMap[k] = 0;
+      } else if (currentFilter === 'week') {
+        for (var d = 0; d < 7; d++) {
+          var tempDate = new Date(startOfWeek);
+          tempDate.setDate(startOfWeek.getDate() + d);
+          var k = formatDayKey(tempDate);
+          chartLabels.push(k);
+          graphDataMap[k] = 0;
+        }
+      } else if (currentFilter === 'month') {
+        var totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        for (var d = 1; d <= totalDays; d++) {
+          var tempDate = new Date(now.getFullYear(), now.getMonth(), d);
+          var k = formatDayKey(tempDate);
+          chartLabels.push(k);
+          graphDataMap[k] = 0;
+        }
+      } else if (currentFilter === 'quarter') {
+        for (var m = 0; m < 3; m++) {
+          var tempDate = new Date(now.getFullYear(), (currentQuarter * 3) + m, 1);
+          var k = formatMonthKey(tempDate);
+          chartLabels.push(k);
+          graphDataMap[k] = 0;
+        }
+      } else if (currentFilter === 'year') {
+        for (var m = 0; m < 12; m++) {
+          var tempDate = new Date(now.getFullYear(), m, 1);
+          var k = formatMonthKey(tempDate);
+          chartLabels.push(k);
+          graphDataMap[k] = 0;
+        }
+      }
+
+      for (var i = globalFinanceData.length - 1; i >= 0; i--) {
+        var row = globalFinanceData[i];
+        if (row.type === 'ລາຍຮັບ') continue; 
+
+        var rowDate = parseDateStr(row.date);
+        rowDate.setHours(0,0,0,0);
+        var isMatch = false;
+
+        if (currentFilter === 'today' && rowDate.getTime() === startOfToday.getTime()) isMatch = true;
+        if (currentFilter === 'week' && rowDate >= startOfWeek) isMatch = true;
+        if (currentFilter === 'month' && rowDate >= startOfMonth) isMatch = true;
+        if (currentFilter === 'quarter' && rowDate >= startOfQuarter) isMatch = true;
+        if (currentFilter === 'year' && rowDate >= startOfYear) isMatch = true;
+        if (currentFilter === 'all') isMatch = true;
+
+        if (isMatch) {
+          var amt = Number(row.amount);
+          var type = row.type;
+
+          filteredTotal += amt;
+          if (!categoryTotals[type]) categoryTotals[type] = 0;
+          categoryTotals[type] += amt;
+
+          var key = (currentFilter === 'today' || currentFilter === 'week' || currentFilter === 'month') ? formatDayKey(rowDate) : formatMonthKey(rowDate);
+
+          if (currentFilter === 'all') {
+            if (graphDataMap[key] === undefined) {
+              chartLabels.unshift(key); 
+              graphDataMap[key] = 0;
+            }
+          }
+
+          if (graphDataMap[key] !== undefined) {
+            graphDataMap[key] += amt;
+          }
+
+          filteredHistoryHtml += `
+            <div class="trans-item">
+              <div class="trans-icon"><span class="material-icons-outlined">payments</span></div>
+              <div class="trans-info">
+                <div class="trans-title">${row.note}</div>
+                <div><span class="trans-type">${type}</span> <span class="trans-date">${row.date}</span></div>
+              </div>
+              <div class="trans-amount">-${amt.toLocaleString()}</div>
+            </div>`;
+        }
+      }
+
+      document.getElementById('total-filtered').innerText = filteredTotal.toLocaleString() + ' ₭';
+
+      var chartDataArr = [];
+      for (var k = 0; k < chartLabels.length; k++) {
+        chartDataArr.push(graphDataMap[chartLabels[k]] || 0);
+      }
+
+      renderExpenseChart(chartLabels, chartDataArr);
+
+      if (filteredHistoryHtml === '') {
+        list.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">ບໍ່ມີລາຍການໃນຊ່ວງເວລານີ້</div>';
+        reportList.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">ບໍ່ມີລາຍການໃນຊ່ວງເວລານີ້</div>';
+        return;
+      } else {
+        list.innerHTML = filteredHistoryHtml;
+      }
+
+      reportList.innerHTML = '';
+      var categories = Object.keys(categoryTotals);
+      categories.sort(function(a, b) { return categoryTotals[b] - categoryTotals[a]; }); 
+
+      for (var c = 0; c < categories.length; c++) {
+        var catName = categories[c];
+        var catAmt = categoryTotals[catName];
+        var percent = filteredTotal > 0 ? (catAmt / filteredTotal) * 100 : 0;
+        
+        var barColor = "#111";
+        if (c === 1) barColor = "#555";
+        if (c === 2) barColor = "#888";
+        if (c > 2) barColor = "#ccc";
+
+        reportList.innerHTML += `
+          <div class="report-item">
+            <div class="report-header">
+              <span>${catName}</span>
+              <span>${catAmt.toLocaleString()} ₭</span>
+            </div>
+            <div class="report-bar-bg">
+              <div class="report-bar-fill" style="width: ${percent}%; background-color: ${barColor};"></div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function saveExpense() {
+      var date = document.getElementById('fi-date').value;
+      var type = document.getElementById('fi-type').value;
+      var amount = document.getElementById('fi-amount').value;
+      var note = document.getElementById('fi-note').value;
+
+      if (!date || !amount || !note) { alert("ກະລຸນາກອກຂໍ້ມູນໃຫ້ຄົບຖ້ວນ!"); return; }
+
+      var btn = document.getElementById('btn-save');
+      btn.innerText = "ກຳລັງບັນທຶກ..."; btn.disabled = true;
+
+      var payload = { date: date, type: type, amount: amount, note: note };
+      
+      google.script.run.withSuccessHandler(function(res) {
+        btn.innerText = "ບັນທຶກລາຍຈ່າຍ"; btn.disabled = false;
+        if(res.success) {
+          document.getElementById('fi-amount').value = '';
+          document.getElementById('fi-note').value = '';
+          loadfinanceData(); 
+        } else { alert("Error: " + res.error); }
+      }).savefinanceData(payload);
+    }
+
+    window.onload = checkAuth;
+  </script>
+</body>
+</html>
