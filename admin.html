@@ -199,48 +199,48 @@
     </div>
   </div>
 
-  <script>
-    function linkToPage(pageName) {
-      google.script.run.withSuccessHandler(function(url) {
-        window.top.location.href = url + '?page=' + pageName;
-      }).getScriptUrl();
-    }
+  <script type="module">
+    import { db, ref, onValue, update, remove } from './firebase-config.js';
 
-    function checkAuth() {
+    window.linkToPage = function(pageName) {
+      window.location.href = pageName + '.html';
+    };
+
+    window.checkAuth = function() {
       if (localStorage.getItem('savage_auth') === 'true') {
         document.getElementById('loginOverlay').style.display = 'none'; 
-        loadOrders(); 
+        window.loadOrders(); 
       } else {
         document.getElementById('loginOverlay').style.display = 'flex'; 
       }
-    }
+    };
 
-    function checkLogin() {
+    window.checkLogin = function() {
       var u = document.getElementById('loginUser').value;
       var p = document.getElementById('loginPass').value;
       if (u === 'savage' && p === '112233') {
         localStorage.setItem('savage_auth', 'true'); 
-        checkAuth();
+        window.checkAuth();
       } else {
         document.getElementById('loginError').style.display = 'block';
       }
-    }
+    };
 
-    function logoutSavage() {
+    window.logoutSavage = function() {
       localStorage.removeItem('savage_auth');
       location.reload();
-    }
+    };
     
     window.onerror = function(msg, url, line) {
       console.log("🚨 Error: " + msg + " line: " + line);
     };
 
-    window.onload = function() { checkAuth(); };
+    window.onload = function() { window.checkAuth(); };
 
-    var globalOrders = []; 
-    var currentFilter = 'ລໍຖ້າກວດສອບ'; 
+    window.globalOrders = []; 
+    window.currentFilter = 'ລໍຖ້າກວດສອບ'; 
 
-    function getStatusClass(status) {
+    window.getStatusClass = function(status) {
       if (status === "ລໍຖ້າກວດສອບ") return "status-pending";
       if (status === "ຢືນຢັນແລ້ວ") return "status-confirmed";
       if (status === "ລໍຖ້າຈັດສົ່ງ") return "status-ready";
@@ -248,21 +248,21 @@
       if (status === "ສົ່ງບິນແລ້ວ") return "status-billed";
       if (status === "ຍົກເລີກ") return "status-cancelled";
       return "status-pending";
-    }
+    };
 
-    function updateTabCounts() {
+    window.updateTabCounts = function() {
       var counts = { 'ລໍຖ້າກວດສອບ': 0, 'ລໍຖ້າຈັດສົ່ງ': 0, 'ຈັດສົ່ງແລ້ວ': 0, 'ສົ່ງບິນແລ້ວ': 0, 'ຍົກເລີກ': 0 };
-      for (var i = 0; i < globalOrders.length; i++) {
-        var s = String(globalOrders[i].status || "ລໍຖ້າກວດສອບ").trim();
+      for (var i = 0; i < window.globalOrders.length; i++) {
+        var s = String(window.globalOrders[i].status || "ລໍຖ້າກວດສອບ").trim();
         if (counts[s] !== undefined) counts[s]++;
       }
       
       document.getElementById('dash-pending').innerText = counts['ລໍຖ້າກວດສອບ'];
       document.getElementById('dash-ready').innerText = counts['ລໍຖ້າຈັດສົ່ງ'];
-      document.getElementById('dash-total').innerText = globalOrders.length;
+      document.getElementById('dash-total').innerText = window.globalOrders.length;
 
       var navBadge = document.getElementById('nav-badge-pending');
-      if (counts['ລໍຖ້າกວດສອບ'] > 0) {
+      if (counts['ລໍຖ້າກວດສອບ'] > 0) {
         navBadge.innerText = counts['ລໍຖ້າກວດສອບ'];
         navBadge.style.display = 'flex';
       } else {
@@ -275,31 +275,42 @@
       }
       setBadge('badge-pending', counts['ລໍຖ້າກວດສອບ']); setBadge('badge-ready', counts['ລໍຖ້າຈັດສົ່ງ']);
       setBadge('badge-shipped', counts['ຈັດສົ່ງແລ້ວ']); setBadge('badge-billed', counts['ສົ່ງບິນແລ້ວ']); setBadge('badge-cancelled', counts['ຍົກເລີກ']);
-    }
+    };
 
-    function loadOrders() {
+    window.loadOrders = function() {
       document.getElementById('orders-container').innerHTML = '<div class="loading"><span class="material-icons-outlined" style="animation: spin 1s linear infinite;">sync</span><br>ກຳລັງໂຫຼດຂໍ້ມູນ...</div>';
-      google.script.run.withSuccessHandler(function(jsonString) {
-          try {
-            var response = JSON.parse(jsonString);
-            if (!response.success) throw new Error(response.error);
-            globalOrders = response.data || []; 
-            updateTabCounts(); filterOrders(currentFilter); 
-          } catch (e) { document.getElementById('orders-container').innerHTML = '<div style="color:red; text-align:center;">' + e.message + '</div>'; }
-      }).getAdminData();
-    }
+      
+      const ordersRef = ref(db, 'orders');
+      onValue(ordersRef, (snapshot) => {
+        try {
+          const data = snapshot.val();
+          window.globalOrders = [];
+          if (data) {
+            for (let key in data) {
+              window.globalOrders.push({ ...data[key], orderId: key });
+            }
+          }
+          // Sort by date descending
+          window.globalOrders.sort((a,b) => new Date(b.date) - new Date(a.date));
+          window.updateTabCounts(); 
+          window.filterOrders(window.currentFilter); 
+        } catch (e) { document.getElementById('orders-container').innerHTML = '<div style="color:red; text-align:center;">' + e.message + '</div>'; }
+      }, (error) => {
+          document.getElementById('orders-container').innerHTML = '<div style="color:red; text-align:center;">' + error.message + '</div>';
+      });
+    };
 
-    function filterOrders(status) {
-      currentFilter = status;
+    window.filterOrders = function(status) {
+      window.currentFilter = status;
       var tabs = document.getElementsByClassName('tab-btn');
       for (var i = 0; i < tabs.length; i++) {
         if (tabs[i].innerText.includes(status)) tabs[i].classList.add('active'); else tabs[i].classList.remove('active');
       }
-      var filtered = globalOrders.filter(function(o) { return String(o.status || "ລໍຖ້າກວດສอบ").trim() === status; });
-      renderCards(filtered);
-    }
+      var filtered = window.globalOrders.filter(function(o) { return String(o.status || "ລໍຖ້າກວດສອບ").trim() === status; });
+      window.renderCards(filtered);
+    };
 
-function renderCards(orders) {
+    window.renderCards = function(orders) {
       var container = document.getElementById('orders-container'); container.innerHTML = '';
       if (!orders || orders.length === 0) { container.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">ບໍ່ມີອໍເດີ້ໃນສະຖານະນີ້</div>'; return; }
 
@@ -308,13 +319,10 @@ function renderCards(orders) {
         var safeStatus = String(o.status || "ລໍຖ້າກວດສອບ").trim();
         var slipClass = (safeStatus === "ລໍຖ້າກວດສອບ") ? "status-pending" : (safeStatus === "ລໍຖ້າຈັດສົ່ງ") ? "status-ready" : "status-shipped";
         
-        // 🌟 แก้ไขตรงนี้: ตัดข้อความในวงเล็บ [...] ออกให้หมด 🌟
         var itemsHtml = '';
         if (o.items && o.items.length > 0) {
           for (var j=0; j<o.items.length; j++) {
-            // ใช้ .split('[')[0] เพื่อเอาเฉพาะข้อความก่อนหน้าวงเล็บ [
             var cleanName = o.items[j].name.split('[')[0].trim();
-            
             itemsHtml += `<div class="item-row" style="margin-bottom: 6px;"><span><strong style="color: #ff3d00;">${o.items[j].qty}x</strong> ${cleanName}</span></div>`;
           }
         } else { 
@@ -332,7 +340,7 @@ function renderCards(orders) {
 
         var card = `
           <div class="order-card">
-            <div class="card-header"><div><div class="order-id">${o.orderId}</div><div class="order-date">${o.date}</div></div><div class="status-badge ${getStatusClass(safeStatus)}">${safeStatus}</div></div>
+            <div class="card-header"><div><div class="order-id">${o.orderId}</div><div class="order-date">${o.date}</div></div><div class="status-badge ${window.getStatusClass(safeStatus)}">${safeStatus}</div></div>
             <div class="info-grid">
               <div class="info-item"><div class="info-label">ລູກຄ້າ:</div><div class="info-value">${o.name} <br><span style="font-size:0.75rem; color:#666;">${o.phone}</span></div></div>
               <div class="info-item"><div class="info-label">การຈັດສົ່ງ:</div><div class="info-value">${o.express} <br><span style="font-size:0.75rem; color:#666;">${o.district}, ${o.province}</span></div></div>
@@ -359,47 +367,38 @@ function renderCards(orders) {
           </div>`;
         container.innerHTML += card;
       }
-    }
+    };
 
-    function updateStatus(orderId, event) {
+    window.updateStatus = async function(orderId, event) {
       var newStatus = document.getElementById('status-' + orderId).value;
-      var btn = event.currentTarget; var originalText = btn.innerHTML;
+      var btn = event.currentTarget; 
+      var originalText = btn.innerHTML;
       btn.innerHTML = "ບັນທຶກ..."; btn.disabled = true;
-      google.script.run
-        .withSuccessHandler(function(success) {
-          if (success) {
-            for(var i=0; i<globalOrders.length; i++) { if(globalOrders[i].orderId === orderId) { globalOrders[i].status = newStatus; break; } }
-            updateTabCounts(); filterOrders(currentFilter); alert("ອັບເດດສະຖານະສຳເລັດ!");
-          } else { alert("ເກີດຂໍ້ຜິດພາດໃນການບັນທຶກ!"); btn.innerHTML = originalText; btn.disabled = false; }
-        })
-        .withFailureHandler(function(error) { alert("Error: " + error.message); btn.innerHTML = originalText; btn.disabled = false; })
-        .changeOrderStatus(orderId, newStatus);
-    }
+      try {
+        await update(ref(db, 'orders/' + orderId), { status: newStatus });
+        btn.innerHTML = "ບັນທຶກແລ້ວ";
+        setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 1000);
+      } catch (error) {
+        alert("Error: " + error.message); 
+        btn.innerHTML = originalText; btn.disabled = false;
+      }
+    };
 
-    function deleteOrder(orderId) {
+    window.deleteOrder = async function(orderId) {
       if (confirm("⚠️ ຢືນຢັນການລຶບອໍເດີ້: " + orderId + "\n(ຂໍ້ມູນຈະຖືກລຶບອອກຈາກລະບົບຢ່າງຖາວອນ)")) {
         document.getElementById('orders-container').innerHTML = '<div class="loading"><span class="material-icons-outlined" style="animation: spin 1s linear infinite;">delete</span><br>ກຳລັງລຶບອໍເດີ້...</div>';
-        google.script.run
-          .withSuccessHandler(function(success) {
-            if (success) {
-              alert("✅ ລຶບอໍເດີ້ສຳເລັດແລ້ວ!");
-              loadOrders(); 
-            } else {
-              alert("❌ ເກີດຂໍ້ຜິດພາດໃນການລຶບ!");
-              loadOrders();
-            }
-          })
-          .withFailureHandler(function(error) {
-            alert("Error: " + error.message);
-            loadOrders();
-          })
-          .deleteOrderData(orderId); 
+        try {
+          await remove(ref(db, 'orders/' + orderId));
+          // UI updates automatically via onValue
+        } catch (error) {
+          alert("Error: " + error.message);
+          window.loadOrders();
+        }
       }
-    }
+    };
 
-    // 🖨️ ฟังก์ชันพิมพ์ "ใบปะหน้า" (ปุ่มสีดำ)
-    function printOrderLabel(orderId) {
-      var o = globalOrders.find(function(item) { return item.orderId === orderId; }); 
+    window.printOrderLabel = function(orderId) {
+      var o = window.globalOrders.find(function(item) { return item.orderId === orderId; }); 
       if (!o) { alert("ບໍ່ພົບຂໍ້ມູນອໍເດີ້"); return; }
       
       var paymentStr = String(o.payment).toLowerCase();
@@ -501,20 +500,17 @@ function renderCards(orders) {
         <script>window.onload = function() { setTimeout(function(){ window.print(); window.close(); }, 800); };<\/script>
       </body></html>`;
       printWindow.document.write(labelHtml); printWindow.document.close();
-    }
-// 🧾 ฟังก์ชันพิมพ์บิลรายการสินค้า (ปุ่มสีฟ้า) - มินิมอล, ตัดวงเล็บ, ตัวหนังสือเล็ก, ตรงกลาง
-    function printOrderBill(orderId) {
-      var o = globalOrders.find(function(item) { return item.orderId === orderId; }); 
+    };
+
+    window.printOrderBill = function(orderId) {
+      var o = window.globalOrders.find(function(item) { return item.orderId === orderId; }); 
       if (!o) { alert("ບໍ່ພົບຂໍ້ມູນອໍເດີ້"); return; }
       
       var itemsHtml = '';
       if(o.items && o.items.length > 0) {
         for(var i=0; i<o.items.length; i++) {
           var pricePerItem = o.items[i].subtotal / o.items[i].qty;
-          
-          // 🌟 ตัดข้อความในวงเล็บ [ ] ออกให้หมด
           var cleanName = o.items[i].name.split('[')[0].trim();
-          
           itemsHtml += `
             <tr>
               <td class="text-left item-name">${cleanName}</td>
@@ -533,65 +529,23 @@ function renderCards(orders) {
       <title>Packing List - ${o.orderId}</title>
       <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;700;900&display=swap" rel="stylesheet">
       <style>
-        /* 🌟 บังคับหน้ากระดาษ 80mm ให้ไร้ขอบส่วนเกินและอยู่ตรงกลาง */
-        @page { 
-            size: 80mm auto; 
-            margin: 0; 
-        }
-        
-        body { 
-          font-family: 'Noto Sans Lao', sans-serif; 
-          margin: 0 auto; /* จัดกึ่งกลางจอคอมเวลาพรีวิว */
-          padding: 5mm; /* ระยะห่างขอบกระดาษ 5 มิลลิเมตร */
-          width: 80mm; /* บังคับกว้าง 80mm */
-          max-width: 100%;
-          box-sizing: border-box; 
-          background: #fff; 
-          color: #000; 
-        }
-        
-        .order-header { 
-          text-align: center; 
-          font-size: 24px; 
-          font-weight: 900; 
-          margin-bottom: 6mm; 
-          border-bottom: 2px solid #000; 
-          padding-bottom: 4mm;
-          letter-spacing: 0.5px;
-        }
-
-        /* 🌟 ปรับขนาดตัวหนังสือในตารางให้เล็กลง และใช้พื้นที่เต็ม 100% */
+        @page { size: 80mm auto; margin: 0; }
+        body { font-family: 'Noto Sans Lao', sans-serif; margin: 0 auto; padding: 5mm; width: 80mm; max-width: 100%; box-sizing: border-box; background: #fff; color: #000; }
+        .order-header { text-align: center; font-size: 24px; font-weight: 900; margin-bottom: 6mm; border-bottom: 2px solid #000; padding-bottom: 4mm; letter-spacing: 0.5px; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4mm; table-layout: fixed; }
         th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 6px 0; font-weight: 900; font-size: 12px;}
         td { border-bottom: 1px dashed #ccc; padding: 6px 0; vertical-align: top; font-weight: 700; word-wrap: break-word;}
-        
         .text-left { text-align: left; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .item-name { padding-right: 4px; line-height: 1.4; }
-
-        .total-wrapper { 
-          display: flex; 
-          justify-content: space-between; 
-          align-items: center; 
-          margin-top: 6mm; 
-          border-top: 2px solid #000; 
-          padding-top: 4mm; 
-        }
+        .total-wrapper { display: flex; justify-content: space-between; align-items: center; margin-top: 6mm; border-top: 2px solid #000; padding-top: 4mm; }
         .total-label { font-size: 14px; font-weight: 900; }
         .total-amount { font-size: 18px; font-weight: 900; }
-        
-        /* 🌟 ซ่อน Header/Footer ของ Browser เวลาพิมพ์ (ถ้ามี) */
-        @media print {
-            body { margin: 0; padding: 5mm; width: 80mm; }
-        }
+        @media print { body { margin: 0; padding: 5mm; width: 80mm; } }
       </style>
       </head><body>
-        
-        <div class="order-header">
-          ${o.orderId}
-        </div>
-
+        <div class="order-header">${o.orderId}</div>
         <table>
           <thead>
             <tr>
@@ -600,20 +554,16 @@ function renderCards(orders) {
               <th class="text-right" style="width: 30%;">ລາຄາ</th>
             </tr>
           </thead>
-          <tbody>
-            ${itemsHtml}
-          </tbody>
+          <tbody>${itemsHtml}</tbody>
         </table>
-
         <div class="total-wrapper">
           <div class="total-label">ຍອດລວມ:</div>
           <div class="total-amount">₭${o.total.toLocaleString()}</div>
         </div>
-
         <script>window.onload = function() { setTimeout(function(){ window.print(); window.close(); }, 800); };<\/script>
       </body></html>`;
       printWindow.document.write(billHtml); printWindow.document.close();
-    }
+    };
   </script>
 </body>
 </html>

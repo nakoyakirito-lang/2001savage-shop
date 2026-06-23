@@ -167,133 +167,136 @@
     </div>
   </div>
 
-  <script>
-    function linkToPage(pageName) { google.script.run.withSuccessHandler(function(url) { window.top.location.href = url + '?page=' + pageName; }).getScriptUrl(); }
-    
-    function checkAuth() {
-      if (localStorage.getItem('savage_auth') === 'true') {
-        document.getElementById('loginOverlay').style.display = 'none';
-        loadDropdownData(); // ดึงข้อมูล Dropdown ทันทีที่เข้าสู่ระบบผ่าน
-      } else {
-        document.getElementById('loginOverlay').style.display = 'flex';
-      }
-    }
-    
-    function checkLogin() {
-      var u = document.getElementById('loginUser').value;
-      var p = document.getElementById('loginPass').value;
-      if (u === 'savage' && p === '112233') {
-        localStorage.setItem('savage_auth', 'true');
-        checkAuth();
-      } else {
-        document.getElementById('loginError').style.display = 'block';
-      }
-    }
-    
-    function logoutSavage() { localStorage.removeItem('savage_auth'); location.reload(); }
-    window.onload = function() { checkAuth(); };
+  <script type="module">
+import { db, ref, get, set } from './firebase-config.js';
 
-    // 🌟 ดึงข้อมูล Group และ Model มาใส่ใน Dropdown
-    function loadDropdownData() {
-      google.script.run.withSuccessHandler(function(data) {
-        let gList = document.getElementById('groupList');
-        let mList = document.getElementById('modelList');
-        gList.innerHTML = ''; mList.innerHTML = '';
-        
-        data.groups.forEach(g => { gList.innerHTML += `<option value="${g}">`; });
-        data.models.forEach(m => { mList.innerHTML += `<option value="${m}">`; });
-      }).getFormDropdownData();
-    }
+window.linkToPage = function(pageName) { window.location.href = pageName + '.html'; }
 
-    // ฟังก์ชันช่วยอ่านไฟล์รูปเป็น Base64
-    function readFileAsBase64(file) {
-      return new Promise((resolve) => {
-        let reader = new FileReader();
-        reader.onload = e => resolve(e.target.result.split(',')[1]);
-        reader.readAsDataURL(file);
-      });
-    }
+window.checkAuth = function() {
+  if (localStorage.getItem('savage_auth') === 'true') {
+    document.getElementById('loginOverlay').style.display = 'none';
+    window.loadDropdownData(); 
+  } else {
+    document.getElementById('loginOverlay').style.display = 'flex';
+  }
+}
 
-    // 🌟 ฟังก์ชันบันทึกข้อมูล (อัปเกรดให้รองรับแกลเลอรี่หลายรูป)
-    async function submitProduct() {
-      let productId = document.getElementById('p-id').value;
-      let group = document.getElementById('p-group').value.trim();
-      let name = document.getElementById('p-name').value.trim();
-      let model = document.getElementById('p-model').value.trim();
-      let costPrice = document.getElementById('p-cost').value;
-      let sellPrice = document.getElementById('p-price').value;
-      
-      let mainInput = document.getElementById('p-image');
-      let galleryInput = document.getElementById('p-gallery');
+window.checkLogin = function() {
+  var u = document.getElementById('loginUser').value;
+  var p = document.getElementById('loginPass').value;
+  if (u === 'savage' && p === '112233') {
+    localStorage.setItem('savage_auth', 'true');
+    window.checkAuth();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
 
-      if (!group || !name || !model || !costPrice || !sellPrice) {
-        alert('ກະລຸນາປ້ອນຂໍ້ມູນທີ່ມີເຄື່ອງໝາຍ * ໃຫ້ຄົບຖ້ວນ!');
-        return;
-      }
+window.logoutSavage = function() { localStorage.removeItem('savage_auth'); location.reload(); }
+window.onload = function() { window.checkAuth(); };
 
-      let btn = document.getElementById('btn-save'); 
-      btn.innerHTML = '<span class="material-icons-outlined" style="animation: spin 1s linear infinite;">sync</span> ກຳລັງບັນທຶກ ແລະ ອັບໂຫຼດຮູບ...';
-      btn.disabled = true;
-
-      let productData = {
-        productId: productId,
-        group: group,
-        productName: name,
-        motoModel: model,
-        costPrice: parseFloat(costPrice),
-        sellPrice: parseFloat(sellPrice),
-        gallery: [] // ตัวแปรเก็บรูปแกลเลอรี่
-      };
-
-      // 1. อ่านรูปหลัก
-      if (mainInput.files.length > 0) {
-        let file = mainInput.files[0];
-        productData.imageBase64 = await readFileAsBase64(file);
-        productData.imageMimeType = file.type;
-        productData.imageName = file.name;
-      } else {
-        productData.imageUrl = "";
-      }
-
-      // 2. อ่านรูปแกลเลอรี่หลายรูป
-      if (galleryInput.files.length > 0) {
-        for (let i = 0; i < galleryInput.files.length; i++) {
-          let gf = galleryInput.files[i];
-          let b64 = await readFileAsBase64(gf);
-          productData.gallery.push({ base64: b64, mimeType: gf.type, name: gf.name });
+window.loadDropdownData = function() {
+  get(ref(db, 'products')).then(snapshot => {
+    let gSet = new Set();
+    let mSet = new Set();
+    const data = snapshot.val();
+    if (data) {
+      for(let key in data) {
+        let p = data[key];
+        if(p.category) gSet.add(p.category);
+        if(p.model) {
+          p.model.split(',').forEach(m => mSet.add(m.trim()));
         }
       }
+    }
+    
+    let gList = document.getElementById('groupList');
+    let mList = document.getElementById('modelList');
+    gList.innerHTML = ''; mList.innerHTML = '';
+    
+    Array.from(gSet).sort().forEach(g => { if(g) gList.innerHTML += \`<option value="\${g}">\`; });
+    Array.from(mSet).sort().forEach(m => { if(m) mList.innerHTML += \`<option value="\${m}">\`; });
+  });
+}
 
-      // ส่งข้อมูลไปหลังบ้าน
-      google.script.run
-        .withSuccessHandler(function(res) {
-          if(res.success) {
-            document.getElementById('showNewId').innerText = res.productId;
-            document.getElementById('successModalProd').style.display = 'flex';
-          } else {
-            alert('ເກີດຂໍ້ຜິດພາດ: ' + res.message);
-          }
-          btn.innerHTML = '<span class="material-icons-outlined">save</span> ບັນທຶກສິນຄ້າເຂົ້າລະບົບ';
-          btn.disabled = false;
-        })
-        .withFailureHandler(function(error) {
-          alert('System Error: ' + error.message);
-          btn.innerHTML = '<span class="material-icons-outlined">save</span> ບັນທຶກສິນຄ້າເຂົ້າລະບົບ';
-          btn.disabled = false;
-        })
-        .saveNewProductWithGallery(productData); // เรียกใช้ฟังก์ชันใหม่หลังบ้าน
+window.readFileAsBase64DataUrl = function(file) {
+  return new Promise((resolve) => {
+    let reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+window.submitProduct = async function() {
+  let productId = document.getElementById('p-id').value.trim();
+  let group = document.getElementById('p-group').value.trim();
+  let name = document.getElementById('p-name').value.trim();
+  let model = document.getElementById('p-model').value.trim();
+  let costPrice = document.getElementById('p-cost').value;
+  let sellPrice = document.getElementById('p-price').value;
+  
+  let mainInput = document.getElementById('p-image');
+  let galleryInput = document.getElementById('p-gallery');
+
+  if (!group || !name || !model || !costPrice || !sellPrice) {
+    alert('ກະລຸນາປ້ອນຂໍ້ມູນທີ່ມີເຄື່ອງໝາຍ * ໃຫ້ຄົບຖ້ວນ!');
+    return;
+  }
+
+  let btn = document.getElementById('btn-save'); 
+  btn.innerHTML = '<span class="material-icons-outlined" style="animation: spin 1s linear infinite;">sync</span> ກຳລັງບັນທຶກ ແລະ ອັບໂຫຼດຮູບ...';
+  btn.disabled = true;
+
+  if (!productId) {
+    productId = "P" + Date.now().toString().slice(-5); // Generate simple ID
+  }
+
+  let productData = {
+    category: group,
+    name: name,
+    model: model,
+    cost: parseFloat(costPrice),
+    price: parseFloat(sellPrice),
+    stock: 0, // Default stock 0
+    gallery: [] 
+  };
+
+  try {
+    if (mainInput.files.length > 0) {
+      productData.img = await window.readFileAsBase64DataUrl(mainInput.files[0]);
+    } else {
+      productData.img = "";
     }
 
-    function resetFormProd() {
-      document.getElementById('p-id').value = '';
-      document.getElementById('p-name').value = '';
-      document.getElementById('p-cost').value = '';
-      document.getElementById('p-price').value = '';
-      document.getElementById('p-image').value = '';
-      document.getElementById('p-gallery').value = '';
-      // Group และ Model ไม่ลบ เผื่อจะเพิ่มสินค้าหมวดหมู่เดิมต่อ
-      document.getElementById('successModalProd').style.display = 'none';
+    if (galleryInput.files.length > 0) {
+      for (let i = 0; i < galleryInput.files.length; i++) {
+        let b64Url = await window.readFileAsBase64DataUrl(galleryInput.files[i]);
+        productData.gallery.push(b64Url);
+      }
     }
-  </script>
+
+    await set(ref(db, 'products/' + productId), productData);
+
+    document.getElementById('showNewId').innerText = productId;
+    document.getElementById('successModalProd').style.display = 'flex';
+  } catch (error) {
+    alert('ເກີດຂໍ້ຜິດພາດ: ' + error.message);
+  }
+
+  btn.innerHTML = '<span class="material-icons-outlined">save</span> ບັນທຶກສິນຄ້າເຂົ້າລະບົບ';
+  btn.disabled = false;
+}
+
+window.resetFormProd = function() {
+  document.getElementById('p-id').value = '';
+  document.getElementById('p-name').value = '';
+  document.getElementById('p-cost').value = '';
+  document.getElementById('p-price').value = '';
+  document.getElementById('p-image').value = '';
+  document.getElementById('p-gallery').value = '';
+  document.getElementById('successModalProd').style.display = 'none';
+}
+
+</script>
 </body>
 </html>
