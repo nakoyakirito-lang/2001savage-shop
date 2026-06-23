@@ -1,4 +1,4 @@
-import { db, ref, get, push, set } from './firebase-config.js';
+import { db, ref, get, push, set, auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from './firebase-config.js';
 
 window.globalFinanceData = [];
 window.currentFilter = 'today';
@@ -7,26 +7,29 @@ window.expenseChartInstance = null;
 window.linkToPage = function(pageName) { window.location.href = pageName + '.html'; }
 
 window.checkAuth = function() {
-  if (localStorage.getItem('savage_auth') === 'true') {
-    document.getElementById('loginOverlay').style.display = 'none';
-    window.loadfinanceData();
-  } else {
-    document.getElementById('loginOverlay').style.display = 'flex';
-  }
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.getElementById('loginOverlay').style.display = 'none';
+      window.loadfinanceData();
+    } else {
+      document.getElementById('loginOverlay').style.display = 'flex';
+    }
+  });
 }
 
-window.checkLogin = function() {
-  var u = document.getElementById('loginUser').value;
+window.checkLogin = async function() {
+  var u = document.getElementById('loginUser').value.trim();
   var p = document.getElementById('loginPass').value;
-  if (u === 'savage' && p === '112233') {
-    localStorage.setItem('savage_auth', 'true');
-    window.checkAuth();
-  } else {
+  if (!u.includes('@')) u = u + '@savage.com';
+  document.getElementById('loginError').style.display = 'none';
+  try {
+    await signInWithEmailAndPassword(auth, u, p);
+  } catch (error) {
     document.getElementById('loginError').style.display = 'block';
   }
 }
 
-window.logoutSavage = function() { localStorage.removeItem('savage_auth'); location.reload(); }
+window.logoutSavage = async function() { await signOut(auth); }
 
 var localNow = new Date();
 var localDateString = localNow.getFullYear() + '-' + String(localNow.getMonth() + 1).padStart(2, '0') + '-' + String(localNow.getDate()).padStart(2, '0');

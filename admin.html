@@ -140,8 +140,8 @@
     <div style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
       <h3 style="color: #111; margin-bottom: 20px; text-align: center; font-weight: 900;">ເຂົ້າສູ່ລະບົບ (Admin)</h3>
       <div style="margin-bottom: 15px;">
-        <label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Username</label>
-        <input type="text" id="loginUser" placeholder="ໃສ່ຊື່" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-weight: 600; color: #111; background: #f9f9f9;">
+        <label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Email หรือ Username</label>
+        <input type="text" id="loginUser" placeholder="admin@savage.com หรือ savage" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-weight: 600; color: #111; background: #f9f9f9;">
       </div>
       <div style="margin-bottom: 20px;">
         <label style="color: #333; font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 5px;">Password</label>
@@ -200,35 +200,37 @@
   </div>
 
   <script type="module">
-    import { db, ref, onValue, update, remove } from './firebase-config.js';
+    import { db, ref, onValue, update, remove, auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from './firebase-config.js';
 
     window.linkToPage = function(pageName) {
       window.location.href = pageName + '.html';
     };
 
     window.checkAuth = function() {
-      if (localStorage.getItem('savage_auth') === 'true') {
-        document.getElementById('loginOverlay').style.display = 'none'; 
-        window.loadOrders(); 
-      } else {
-        document.getElementById('loginOverlay').style.display = 'flex'; 
-      }
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          document.getElementById('loginOverlay').style.display = 'none'; 
+          window.loadOrders(); 
+        } else {
+          document.getElementById('loginOverlay').style.display = 'flex'; 
+        }
+      });
     };
 
-    window.checkLogin = function() {
-      var u = document.getElementById('loginUser').value;
+    window.checkLogin = async function() {
+      var u = document.getElementById('loginUser').value.trim();
       var p = document.getElementById('loginPass').value;
-      if (u === 'savage' && p === '112233') {
-        localStorage.setItem('savage_auth', 'true'); 
-        window.checkAuth();
-      } else {
+      if (!u.includes('@')) u = u + '@savage.com';
+      document.getElementById('loginError').style.display = 'none';
+      try {
+        await signInWithEmailAndPassword(auth, u, p);
+      } catch (error) {
         document.getElementById('loginError').style.display = 'block';
       }
     };
 
-    window.logoutSavage = function() {
-      localStorage.removeItem('savage_auth');
-      location.reload();
+    window.logoutSavage = async function() {
+      await signOut(auth);
     };
     
     window.onerror = function(msg, url, line) {
