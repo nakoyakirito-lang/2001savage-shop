@@ -49,7 +49,7 @@
 
     .empty-state { text-align: center; padding: 50px 20px; color: #999; }
     .empty-state .material-icons-outlined { font-size: 4rem; color: #ddd; margin-bottom: 15px; }
-    .btn-go-home { display: inline-block; background: #111; color: white; padding: 12px 30px; border-radius: 25px; font-weight: 700; font-size: 0.8rem; margin-top: 15px; }
+    .btn-go-home { display: inline-block; background: #111; color: white; padding: 12px 30px; border-radius: 25px; font-weight: 700; font-size: 0.8rem; margin-top: 15px; text-decoration: none; }
 
     /* Bottom Nav */
     .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: white; display: flex; justify-content: space-around; border-top: 1px solid #eee; z-index: 100; padding: 6px 0 15px; }
@@ -81,7 +81,7 @@
 <body>
 
   <header class="header">
-    <a href="javascript:void(0)" onclick="window.history.back()" class="icon-btn">
+    <a href="index.html" class="icon-btn">
       <span class="material-icons-outlined">arrow_back</span>
     </a>
     <div class="title">MY ACTIVITY</div>
@@ -101,7 +101,7 @@
   <div id="content-history" class="tab-content"></div>
 
   <nav class="bottom-nav">
-    <a href="<?= getScriptUrl() ?>?page=home" target="_top" class="nav-link">
+    <a href="index.html" class="nav-link">
       <div class="nav-icon-box"><span class="material-icons-outlined">home</span></div><span>HOME</span>
     </a>
    <a href="javascript:void(0);" class="nav-link active">
@@ -111,7 +111,7 @@
       </div>
       <span>ORDERS</span>
     </a>
-    <a href="<?= getScriptUrl() ?>?page=profile" target="_top" class="nav-link">
+    <a href="profile.html" class="nav-link">
       <div class="nav-icon-box"><span class="material-icons-outlined">person</span></div><span>PROFILE</span>
     </a>
   </nav>
@@ -126,7 +126,7 @@
         <input type="text" id="edit-express" placeholder="ເຊັ່ນ: ຮຸ່ງອາລຸນ, ແອນ້ອຍ...">
       </div>
       <div class="input-group">
-        <label>ສາຂา / ສະຖານທີ່ (Branch/Address):</label>
+        <label>ສາຂາ / ສະຖານທີ່ (Branch/Address):</label>
         <input type="text" id="edit-address" placeholder="ເຊັ່ນ: ສາຂາສີໄຄ, ຕະຫຼາດເຊົ້າ...">
       </div>
       <div class="input-group" style="display:flex; gap:10px;">
@@ -140,314 +140,17 @@
         </div>
       </div>
       <div class="input-group">
-        <label>ເບີໂທຕິດຕໍ່ (Phone):</label>
+        <label>ເມືອງຕິດຕໍ່ (Phone):</label>
         <input type="text" id="edit-phone">
       </div>
 
       <div style="display: flex; gap: 10px; margin-top: 20px;">
         <button onclick="closeEditModal()" style="flex:1; padding: 12px; background: #eee; border: none; border-radius: 8px; font-weight: 800; color: #555; cursor: pointer;">ຍົກເລີກ</button>
-        <button id="btn-save-address" onclick="saveAddress()" style="flex:1; padding: 12px; background: #111; color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer;">ບັນທຶກ</button>
+        <button id="btn-save-address" onclick="saveAddress()" style="flex:1; padding: 12px; background: #111; color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer;">บันทึก</button>
       </div>
     </div>
   </div>
 
-  <script>
-    var currentStatusFilter = 'ALL';
-
-    function switchTab(tabId) {
-      document.getElementById('tab-btn-cart').classList.remove('active');
-      document.getElementById('tab-btn-history').classList.remove('active');
-      document.getElementById('content-cart').classList.remove('active');
-      document.getElementById('content-history').classList.remove('active');
-      document.getElementById('tab-btn-' + tabId).classList.add('active');
-      document.getElementById('content-' + tabId).classList.add('active');
-
-      if(tabId === 'cart') loadCart();
-      if(tabId === 'history') loadHistory();
-    }
-
-    // 🌟 แก้ไข: อัปเดตตัวเลขแจ้งเตือนทั้งตะกร้าและประวัติที่รอยืนยัน
-    function updateNavBadge() {
-      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
-      var badgeBottom = document.getElementById('nav-cart-badge');
-      var badgeTop = document.getElementById('cart-tab-badge'); 
-      
-      var totalQty = 0;
-      for (var i = 0; i < cart.length; i++) { totalQty += cart[i].qty; }
-      
-      if (totalQty > 0) {
-        if (badgeBottom) { badgeBottom.innerText = totalQty; badgeBottom.style.display = 'block'; }
-        if (badgeTop) { badgeTop.innerText = totalQty; badgeTop.style.display = 'inline-block'; }
-      } else {
-        if (badgeBottom) badgeBottom.style.display = 'none';
-        if (badgeTop) badgeTop.style.display = 'none';
-      }
-
-      // นับตัวเลข HISTORY (รอยืนยัน)
-      var orders = JSON.parse(localStorage.getItem('savage_orders')) || [];
-      var pendingCount = 0;
-      for (var j = 0; j < orders.length; j++) {
-        if (orders[j].status === "ລໍຖ້າກວດສອບ") pendingCount++;
-      }
-      var historyBadge = document.getElementById('history-tab-badge');
-      if (historyBadge) {
-        if (pendingCount > 0) {
-          historyBadge.innerText = pendingCount;
-          historyBadge.style.display = 'inline-block';
-        } else {
-          historyBadge.style.display = 'none';
-        }
-      }
-    }
-
-    // --- ส่วน Cart ---
-    function loadCart() {
-      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
-      var container = document.getElementById('content-cart');
-      if (cart.length === 0) {
-        container.innerHTML = `<div class="empty-state"><span class="material-icons-outlined">shopping_cart</span><p>ບໍ່ມີສິນຄ້າໃນກະຕ່າໃນຂະນະນີ້</p><a href="<?= getScriptUrl() ?>?page=home" target="_top" class="btn-go-home">GO SHOPPING</a></div>`;
-        updateNavBadge(); return;
-      }
-      var html = ''; var grandTotal = 0;
-      for (var i = 0; i < cart.length; i++) {
-        var item = cart[i]; grandTotal += (item.price * item.qty);
-        html += `<div class="cart-item"><img src="${item.img}" class="item-img" onerror="this.src='https://via.placeholder.com/70?text=No+Image'"><div class="item-details"><div class="item-header"><div class="item-name">${item.name}</div><button class="btn-delete" onclick="removeCartItem(${i})"><span class="material-icons-outlined" style="font-size: 20px;">delete_outline</span></button></div><div class="item-price">${item.price.toLocaleString()} ₭</div><div class="qty-controls"><button class="qty-btn" onclick="updateCartQty(${i}, -1)"><span class="material-icons-outlined" style="font-size: 16px;">remove</span></button><span class="qty-num">${item.qty}</span><button class="qty-btn" onclick="updateCartQty(${i}, 1)"><span class="material-icons-outlined" style="font-size: 16px;">add</span></button></div></div></div>`;
-      }
-      html += `<div class="cart-total-box"><div style="font-size:0.8rem; font-weight:700; color:#666; margin-bottom:5px;">ຍອດລວມທັງໝົດ (TOTAL)</div><div style="font-size:1.5rem; font-weight:900; font-family:'Montserrat'; color:#ff3d00;">${grandTotal.toLocaleString()} ₭</div><button class="btn-checkout" onclick="window.top.location.href='<?= getScriptUrl() ?>?page=cart'"><span class="material-icons-outlined">payments</span>ສັ່ງຊື້ ແລະ ຊຳລະເງິນ (CHECKOUT)</button></div>`;
-      container.innerHTML = html; updateNavBadge(); 
-    }
-    function updateCartQty(index, delta) { var cart = JSON.parse(localStorage.getItem('savage_cart')) || []; if (cart[index]) { cart[index].qty += delta; if (cart[index].qty < 1) cart[index].qty = 1; localStorage.setItem('savage_cart', JSON.stringify(cart)); loadCart(); } }
-    function removeCartItem(index) { if(confirm('ຕ້ອງການລຶບສິນຄ້ານີ້ອອກຈາກກະຕ່າແທ້ບໍ່?')) { var cart = JSON.parse(localStorage.getItem('savage_cart')) || []; cart.splice(index, 1); localStorage.setItem('savage_cart', JSON.stringify(cart)); loadCart(); } }
-
-    // --- ส่วน History & ที่อยู่จัดส่ง ---
-    function filterHistoryStatus(status) {
-      currentStatusFilter = status;
-      var orders = JSON.parse(localStorage.getItem('savage_orders')) || [];
-      var container = document.getElementById('content-history');
-      renderHistoryCards(orders, container);
-    }
-
-    function loadHistory() {
-      var orders = JSON.parse(localStorage.getItem('savage_orders')) || [];
-      var container = document.getElementById('content-history');
-      
-      if (orders.length === 0) {
-        container.innerHTML = `<div class="empty-state"><span class="material-icons-outlined">receipt_long</span><p>ຍັງບໍ່ມີປະຫວັດການສັ່ງຊື້</p></div>`; 
-        updateNavBadge();
-        return;
-      }
-
-      renderHistoryCards(orders, container);
-      updateNavBadge();
-
-      var orderIds = [];
-      for (var i = 0; i < orders.length; i++) { orderIds.push(orders[i].orderId); }
-
-      google.script.run
-        .withSuccessHandler(function(statusMap) {
-          if (!statusMap) return;
-          var updated = false;
-          for (var i = 0; i < orders.length; i++) {
-            var oId = orders[i].orderId;
-            if (statusMap[oId]) {
-              if (orders[i].status !== statusMap[oId].status || orders[i].address !== statusMap[oId].address) {
-                orders[i].status = statusMap[oId].status;
-                orders[i].phone = statusMap[oId].phone;
-                orders[i].express = statusMap[oId].express;
-                orders[i].address = statusMap[oId].address;
-                orders[i].province = statusMap[oId].province;
-                orders[i].district = statusMap[oId].district;
-                updated = true;
-              }
-            }
-          }
-          if (updated) {
-            localStorage.setItem('savage_orders', JSON.stringify(orders));
-            renderHistoryCards(orders, container); 
-            updateNavBadge(); // อัปเดตตัวเลขแจ้งเตือนด้วย
-          }
-        })
-        .withFailureHandler(function(error) { console.log(error); })
-        .getLiveOrderStatuses(orderIds);
-    }
-
-    function renderHistoryCards(orders, container) {
-      var counts = { "ລໍຖ້າກວດສອບ": 0, "ຢືນຢັນແລ້ວ": 0, "ລໍຖ້າຈັດສົ່ງ": 0, "ຈັດສົ່ງແລ້ວ": 0, "ສົ່ງບິນແລ້ວ": 0, "ຍົກເລີກ": 0 };
-      for (var i = 0; i < orders.length; i++) {
-        if (counts[orders[i].status] !== undefined) counts[orders[i].status]++;
-      }
-
-      var statuses = [
-        { id: 'ALL', name: 'ທັງໝົດ' },
-        { id: 'ລໍຖ້າກວດສອບ', name: 'ລໍຖ້າກວດສອບ' },
-        { id: 'ຢືນຢັນແລ້ວ', name: 'ຢືນຢັນແລ້ວ' },
-        { id: 'ລໍຖ້າຈັດສົ່ງ', name: 'ລໍຖ້າຈັດສົ່ງ' },
-        { id: 'ຈັດສົ່ງແລ້ວ', name: 'ຈັດສົ່ງແລ້ວ' },
-        { id: 'ສົ່ງບິນແລ້ວ', name: 'ສົ່ງບິນແລ້ວ' },
-        { id: 'ຍົກເລີກ', name: 'ຍົກເລີກ' }
-      ];
-
-      var filterHtml = `<div class="status-filter-bar">`;
-      for (var i = 0; i < statuses.length; i++) {
-        var s = statuses[i];
-        var isActive = (currentStatusFilter === s.id) ? 'active' : '';
-        var badgeHtml = '';
-        
-        if (s.id === 'ALL') {
-          badgeHtml = `<span class="status-badge-count" style="background:#111;">${orders.length}</span>`;
-        } else if (counts[s.id] > 0) {
-          badgeHtml = `<span class="status-badge-count">${counts[s.id]}</span>`;
-        }
-        
-        filterHtml += `<div class="status-tab ${isActive}" onclick="filterHistoryStatus('${s.id}')">${s.name} ${badgeHtml}</div>`;
-      }
-      filterHtml += `</div>`;
-
-      var filteredOrders = orders;
-      if (currentStatusFilter !== 'ALL') {
-        filteredOrders = orders.filter(function(o) { return o.status === currentStatusFilter; });
-      }
-
-      var html = filterHtml + `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <span style="font-size:0.85rem; font-weight:900; color:#111;">ປະຫວັດການສັ່ງຊື້ຂອງທ່ານ</span>
-          <button onclick="loadHistory()" style="background:#111; color:white; border:none; padding:6px 14px; border-radius:20px; font-size:0.75rem; font-weight:800; display:flex; align-items:center; gap:4px; cursor:pointer;">
-            <span class="material-icons-outlined" style="font-size:14px;">refresh</span> ໂຫຼດໃໝ່
-          </button>
-        </div>`;
-      
-      if (filteredOrders.length === 0) {
-        html += `<div class="empty-state"><span class="material-icons-outlined">receipt_long</span><p>ບໍ່ມີອໍເດີ້ໃນສະຖານະນີ້</p></div>`;
-      }
-
-      for (var i = 0; i < filteredOrders.length; i++) {
-        var order = filteredOrders[i];
-        var statusColor = "#ff9800"; var statusBg = "#fff3e0"; 
-        if(order.status === "ຢືນຢັນແລ້ວ") { statusColor = "#1565c0"; statusBg = "#e3f2fd"; }
-        else if(order.status === "ລໍຖ້າຈັດສົ່ງ") { statusColor = "#00838f"; statusBg = "#e0f7fa"; }
-        else if(order.status === "ຈັດສົ່ງແລ້ວ") { statusColor = "#2e7d32"; statusBg = "#e8f5e9"; }
-        else if(order.status === "ສົ່ງບິນແລ້ວ") { statusColor = "#6a1b9a"; statusBg = "#f3e5f5"; }
-        else if(order.status === "ຍົກເລີກ") { statusColor = "#c62828"; statusBg = "#ffebee"; }
-
-        var itemsHtml = '';
-        if (order.items) {
-          for(var j = 0; j < order.items.length; j++) {
-            itemsHtml += `<div class="item-row"><span style="max-width:70%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${order.items[j].qty}x ${order.items[j].name}</span><span>${(order.items[j].qty * order.items[j].price).toLocaleString()} ₭</span></div>`;
-          }
-        }
-
-        var actionBtnsHtml = '';
-        if (order.status === "ລໍຖ້າກວດສອບ") {
-          actionBtnsHtml = `
-            <div style="display:flex; gap:10px; margin-top:10px;">
-              <button onclick="openEditModal('${order.orderId}')" style="flex:1; padding:8px; background:#fff; border:1px solid #111; color:#111; border-radius:8px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px;">
-                <span class="material-icons-outlined" style="font-size:16px;">edit</span> ແກ้ໄຂທີ່ຢູ່
-              </button>
-              <button onclick="cancelCustomerOrder('${order.orderId}')" style="flex:1; padding:8px; background:#ffebee; border:1px solid #ffcdd2; color:#d32f2f; border-radius:8px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px;">
-                <span class="material-icons-outlined" style="font-size:16px;">cancel</span> ຍົກເລີກ
-              </button>
-            </div>
-          `;
-        }
-
-        html += `
-          <div class="order-card">
-            <div class="order-header">
-              <div style="font-family:'Montserrat'; font-weight:900; font-size:1rem; color:#111;">#${order.orderId}</div>
-              <div class="order-status" style="color:${statusColor}; background:${statusBg};">${order.status}</div>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#888; font-weight:700;">
-              <div style="display:flex; align-items:center; gap:4px;"><span class="material-icons-outlined" style="font-size:14px;">schedule</span> ${order.date}</div>
-            </div>
-
-            <div style="margin-top:12px; padding-top:12px; border-top:1px dashed #eee;">
-              <div style="background:#f5f5f5; padding:12px; border-radius:8px; margin-bottom:12px; font-size:0.75rem; color:#444; line-height:1.5;">
-                <div style="font-weight:900; color:#111; margin-bottom:5px; font-size:0.8rem;">📍 ຂໍ້ມູນການຈັດສົ່ງ:</div>
-                <div><b>ຂົນສົ່ງ:</b> ${order.express || '-'}</div>
-                <div><b>ສາຂາ/ສະຖານທີ່:</b> ${order.address || '-'}</div>
-                <div><b>ເມືອງ:</b> ${order.district || '-'}, <b>ແຂວງ:</b> ${order.province || '-'}</div>
-                <div><b>ເບີໂທ:</b> ${order.phone || '-'}</div>
-                ${actionBtnsHtml}
-              </div>
-
-              <div style="font-weight:800; font-size:0.75rem; color:#999; margin-bottom:8px;">📦 ລາຍການສິນຄ້າທີສັ່ງ:</div>
-              ${itemsHtml}
-              
-              <div class="order-footer">
-                <div style="font-size:0.8rem; font-weight:800;">ຍອດລວມທັງໝົດ:</div>
-                <div style="font-family:'Montserrat'; font-weight:900; font-size:1.1rem; color:#ff3d00;">${order.total.toLocaleString()} ₭</div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-      container.innerHTML = html;
-    }
-
-    function cancelCustomerOrder(orderId) {
-      if(confirm('⚠️ ທ່ານຕ້ອງການຍົກເລີກອໍເດີ້ ' + orderId + ' ແທ້ບໍ່?')) {
-        var orders = JSON.parse(localStorage.getItem('savage_orders')) || [];
-        for(var i=0; i<orders.length; i++) {
-          if(orders[i].orderId === orderId) {
-            orders[i].status = "ຍົກເລີກ";
-            break;
-          }
-        }
-        localStorage.setItem('savage_orders', JSON.stringify(orders));
-        loadHistory(); 
-        google.script.run.changeOrderStatus(orderId, "ຍົກເລີກ");
-      }
-    }
-
-    function openEditModal(orderId) {
-      var orders = JSON.parse(localStorage.getItem('savage_orders')) || [];
-      var o = orders.find(function(x){ return x.orderId === orderId; });
-      if(!o) return;
-      
-      document.getElementById('edit-id').value = o.orderId;
-      document.getElementById('edit-express').value = o.express || '';
-      document.getElementById('edit-address').value = o.address || '';
-      document.getElementById('edit-province').value = o.province || '';
-      document.getElementById('edit-district').value = o.district || '';
-      document.getElementById('edit-phone').value = o.phone || '';
-      
-      document.getElementById('addressModal').style.display = 'flex';
-    }
-
-    function closeEditModal() {
-      document.getElementById('addressModal').style.display = 'none';
-    }
-
-    function saveAddress() {
-      var id = document.getElementById('edit-id').value;
-      var express = document.getElementById('edit-express').value;
-      var address = document.getElementById('edit-address').value;
-      var province = document.getElementById('edit-province').value;
-      var district = document.getElementById('edit-district').value;
-      var phone = document.getElementById('edit-phone').value;
-      
-      var btn = document.getElementById('btn-save-address');
-      btn.innerText = 'ກຳລັງບັນທຶກ...';
-      btn.disabled = true;
-
-      google.script.run
-        .withSuccessHandler(function(success) {
-          btn.innerText = 'ບັນທຶກ';
-          btn.disabled = false;
-          if (success) {
-            alert('ອັບເດດຂໍ້ມູນການຈັດສົ່ງສຳເລັດ!');
-            closeEditModal();
-            loadHistory(); 
-          } else {
-            alert('ເກີດຂໍ້ຜິດພາດ! ກະລຸນາລອງໃໝ່');
-          }
-        })
-        .updateOrderAddress(id, express, address, province, district, phone);
-    }
-
-    window.onload = function() {
-      loadCart();
-      updateNavBadge(); 
-    };
-  </script>
+  <script type="module" src="orders_script.js"></script>
 </body>
 </html>

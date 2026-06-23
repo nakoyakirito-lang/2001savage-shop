@@ -54,30 +54,24 @@
 </head>
 <body>
 
-  <? 
-    var _model = (typeof selectedModel !== 'undefined') ? selectedModel : '';
-    var _groupsData = (typeof groupsData !== 'undefined') ? groupsData : [];
-    var _partsData = (typeof partsData !== 'undefined') ? partsData : [];
-  ?>
-
   <header class="header">
-    <a href="<?= getScriptUrl() ?>?page=home" class="icon-btn" target="_top">
+    <a href="index.html" class="icon-btn">
       <span class="material-icons-outlined">arrow_back</span>
     </a>
     <div class="logo">SAVAGE SHOP</div>
-    <button class="icon-btn" style="position: relative;" onclick="window.top.location.href='<?= getScriptUrl() ?>?page=cart'">
+    <button class="icon-btn" style="position: relative;" onclick="window.location.href='cart.html'">
       <span class="material-icons-outlined">shopping_cart</span>
       <span id="cart-badge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ff3d00; color:white; border-radius:50%; font-size:9px; font-weight:bold; width: 16px; height: 16px; line-height: 16px; text-align: center;">0</span>
     </button>
   </header>
   
   <div class="breadcrumb">
-    <a href="<?= getScriptUrl() ?>?page=home" target="_top">HOME</a><span>›</span>
-    <span class="active-crumb"><?= _model ? _model : 'PARTS' ?></span>
+    <a href="index.html">HOME</a><span>›</span>
+    <span class="active-crumb">PARTS</span>
   </div>
 
-  <h1 class="page-title"><?= _model ? _model + '<br>PARTS' : 'PARTS' ?></h1>
-  <p class="page-desc">PRECISION ENGINEERED AFTERMARKET COMPONENTS FOR <?= _model ?> SERIES.</p>
+  <h1 class="page-title">PARTS</h1>
+  <p class="page-desc">PRECISION ENGINEERED AFTERMARKET COMPONENTS FOR SERIES.</p>
 
   <div class="filter-scroll">
     <div class="filter-btn active">ALL SYSTEMS</div>
@@ -85,86 +79,22 @@
   </div>
 
   <div class="grid-container">
-    <? 
-    var hasItems = false;
-    function getImg(url) {
-      if (!url) return 'https://via.placeholder.com/200?text=No+Image';
-      var id = ''; var match = url.match(/(?:id=|\/file\/d\/)([a-zA-Z0-9-_]+)/);
-      if (match && match[1]) id = match[1];
-      return id ? 'https://lh3.googleusercontent.com/d/' + id : url;
-    }
-
-    for (var i = 0; i < _groupsData.length; i++) {
-      var rawGroupModel = _groupsData[i]['Moto Model'] || _groupsData[i]['Model'] || '';
-      var models = rawGroupModel.toString().split(',').map(function(s){ return s.trim() });
-      
-      if (_model === '' || models.indexOf(_model) !== -1) {
-        hasItems = true;
-        var gName = _groupsData[i]['Group'] || 'ບໍ່ລະບຸ';
-        var gPrice = _groupsData[i]['Price'] || _groupsData[i]['ລາຄາ'] || '0';
-        var gImg = _groupsData[i]['Image_URL'] || _groupsData[i]['image Group'] || '';
-
-        var itemCount = 0;
-        for(var k = 0; k < _partsData.length; k++) {
-          var checkGroup = _partsData[k]['Group'] || '';
-          var rawPartModel = _partsData[k]['Moto Model'] || _partsData[k]['Model'] || '';
-          var checkModels = rawPartModel.toString().split(',').map(function(s){ return s.trim() });
-          if (checkGroup === gName && (_model === '' || checkModels.indexOf(_model) !== -1)) itemCount++;
-        }
-    ?>
-        <a class="card" href="<?= getScriptUrl() ?>?page=detail&model=<?= encodeURIComponent(_model) ?>&group=<?= encodeURIComponent(gName) ?>" target="_top">
-          <div class="badge-count"><?= itemCount ?> OPTIONS</div>
-          <div class="img-box"><img src="<?= getImg(gImg) ?>" onerror="this.src='https://via.placeholder.com/200?text=No+Image'"></div>
-          <div class="card-info">
-            <div class="card-cat"><?= _model ?></div>
-            <div class="card-title"><?= gName ?></div>
-            <div class="card-price-row">
-              <div class="card-price"><?= Number(gPrice).toLocaleString() ?> ₭</div>
-              <span class="material-icons-outlined card-check">check_circle</span>
-            </div>
-          </div>
-        </a>
-    <? 
-      }
-    }
-    if (!hasItems) { ?>
-      <div style="grid-column: span 2; text-align: center; padding: 40px; color: #999; font-size: 0.8rem;">ບໍ່ມີຂໍ້ມູນອາໄຫຼ່ໃນຂະນະນີ້</div>
-    <? } ?>
+    <!-- Cards dynamically loaded -->
   </div>
 
   <nav class="bottom-nav">
-    <a href="<?= getScriptUrl() ?>?page=home" target="_top" class="nav-link"><div class="nav-icon-box"><span class="material-icons-outlined">home</span></div><span>HOME</span></a>
+    <a href="index.html" class="nav-link"><div class="nav-icon-box"><span class="material-icons-outlined">home</span></div><span>HOME</span></a>
    
-   <a href="<?= getScriptUrl() ?>?page=orders" target="_top" class="nav-link">
+   <a href="orders.html" class="nav-link">
       <div class="nav-icon-box">
         <span class="material-icons-outlined">receipt_long</span>
         <span id="nav-cart-badge" style="display:none; position:absolute; top:-4px; right:-8px; background:#ff3d00; color:white; border-radius:50%; font-size:9px; font-weight:bold; min-width: 16px; height: 16px; line-height: 16px; text-align: center; padding: 0 4px; z-index: 10;">0</span>
       </div>
       <span>ORDERS</span>
     </a>
-    <a href="<?= getScriptUrl() ?>?page=profile" target="_top" class="nav-link"><div class="nav-icon-box"><span class="material-icons-outlined">person</span></div><span>PROFILE</span></a>
+    <a href="profile.html" class="nav-link"><div class="nav-icon-box"><span class="material-icons-outlined">person</span></div><span>PROFILE</span></a>
   </nav>
 
-<script>
-    function updateCartBadge() {
-      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
-      
-      var headerBadge = document.getElementById('cart-badge');
-      var navBadge = document.getElementById('nav-cart-badge');
-      
-      if (cart.length > 0) {
-        var totalQty = 0;
-        for (var i = 0; i < cart.length; i++) { totalQty += cart[i].qty; }
-        
-        if (headerBadge) { headerBadge.innerText = totalQty; headerBadge.style.display = 'block'; }
-        if (navBadge) { navBadge.innerText = totalQty; navBadge.style.display = 'block'; }
-      } else {
-        if (headerBadge) headerBadge.style.display = 'none';
-        if (navBadge) navBadge.style.display = 'none';
-      }
-    }
-    
-    updateCartBadge();
-  </script>
+  <script type="module" src="parts_script.js"></script>
 </body>
 </html>

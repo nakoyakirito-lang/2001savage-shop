@@ -72,7 +72,7 @@
 <body>
 
   <header class="header">
-    <a href="<?= getScriptUrl() ?>?page=home" target="_top" class="icon-btn">
+    <a href="index.html" class="icon-btn">
       <span class="material-icons-outlined">arrow_back</span>
     </a>
     <div class="title">SHOPPING CART</div>
@@ -81,7 +81,7 @@
 
   <div class="navigation-bar">
     <div class="breadcrumbs">
-      <a href="<?= getScriptUrl() ?>?page=home" target="_top">HOME</a>
+      <a href="index.html">HOME</a>
       <span class="material-icons-outlined" style="font-size:10px; margin: 0 4px;">chevron_right</span>
       <span style="color: #111; font-weight: 800;">CART</span>
     </div>
@@ -99,16 +99,16 @@
     
     <div class="form-group">
       <label>ເບີໂທຕິດຕໍ່ (WHATSAPP PHONE) *</label>
-      <input type="tel" id="cust-phone" placeholder="ຕົວຢ່າງ: 020 XXXXXXXX">
+      <input type="tel" id="cust-phone" placeholder="ตัวอย่าง: 020 XXXXXXXX">
     </div>
 
     <div class="form-group">
       <label>ບໍລິສັດຂົນສົ່ງ (SHIPPING COMPANY) *</label>
       <select id="cust-shipping-comp">
         <option value="" disabled selected>-- ເລືອກບໍລິສັດຂົນສົ່ງ --</option>
-        <option value="ອະນຸສິດ (Anousith)">ອະນຸສິດ (Anousith)</option>
-        <option value="ຮຸງອາລຸນ (HAL)">ຮຸງອາລຸນ (HAL)</option>
-        <option value="ມີໄຊ (Mesaixay)">ມີໄຊ (Mesaixay)</option>
+        <option value=" Anousith (ອະນຸສິດ)">Anousith (ອະນຸສິດ)</option>
+        <option value="HAL (ຮຸ່ງອາລຸນ)">HAL (ຮຸ່ງອາลຸນ)</option>
+        <option value="Mesaixay (ມີໄຊ)">Mesaixay (ມີໄຊ)</option>
       </select>
     </div>
 
@@ -123,10 +123,10 @@
         <option value="" disabled selected>-- ເລືອກແຂວງ --</option>
         <option value="ນະຄອນຫຼວງວຽງຈັນ">ນະຄອນຫຼວງວຽງຈັນ</option>
         <option value="ຜົ້ງສາລີ">ຜົ້ງສາລີ</option>
-        <option value="ຫຼωງນ້ຳທา">ຫຼວງນ້ຳທາ</option>
-        <option value="ອຸດົມໄຊ">ອຸດົມໄຊ</option>
-        <option value="ບໍ່ແກ້ວ">ບໍ່ແກ้ວ</option>
-        <option value="ຫຼວງພະບາງ">ຫຼວງພະບາງ</option>
+        <option value="ຫຼວງນ້ຳທາ">ຫຼວງນ້ຳທາ</option>
+        <option value="ອຸດົມไຊ">ອຸດົມໄຊ</option>
+        <option value="ບໍ່ແກ້ວ">ບໍ່ແກ້ວ</option>
+        <option value="ຫຼວງພະບາງ">ຫຼวງພະບາງ</option>
         <option value="ຫົວພັນ">ຫົວພັນ</option>
         <option value="ໄຊຍະບູລີ">ໄຊຍະບູລີ</option>
         <option value="ຊຽງຂວາງ">ຊຽງຂວາງ</option>
@@ -136,9 +136,9 @@
         <option value="ສະຫວັນນະເຂດ">ສະຫວັນນະເຂດ</option>
         <option value="ສາລະວັນ">ສາລະວັນ</option>
         <option value="ເຊກອງ">ເຊກອງ</option>
-        <option value="ຈຳປาສັກ">ຈຳປາສັກ</option>
+        <option value="ຈຳປາສັກ">ຈຳປາສັກ</option>
         <option value="ອັດຕະປື">ອັດຕະປື</option>
-        <option value="ໄຊສົມບູນ">ໄຊສົມບູນ</option>
+        <option value="ໄຊສົມບູນ">ໄຊສົมບູນ</option>
       </select>
     </div>
 
@@ -149,11 +149,11 @@
       </select>
     </div>
 
-  <div class="form-group">
+    <div class="form-group">
       <label>ວິທີການຈ່າຍເງິນ (PAYMENT METHOD) *</label>
       <select id="cust-payment-method">
-        <option value="ໂອນເງິນ (Transfer)">ໂອນເງິນ (Transfer)</option>
-        <option value="ເກັບເງິນປາຍທາງ (COD)">ເກັບເງິນປາຍທາງ (COD)</option>
+        <option value="โอนเงิน (Transfer)">โอนเงิน (Transfer)</option>
+        <option value="เก็บเงินปลายทาง (COD)">เก็บเงินปลายทาง (COD)</option>
       </select>
     </div>
 
@@ -164,7 +164,7 @@
       <div class="summary-label">TOTAL AMOUNT:</div>
       <div class="summary-total" id="cart-grand-total">0 ₭</div>
     </div>
-    <button class="btn-submit-order" onclick="sendOrderViaWhatsApp()">
+    <button class="btn-submit-order" id="btn-submit-order" onclick="sendOrderViaWhatsApp()">
       <span class="material-icons-outlined">chat</span>
       SEND ORDER TO WHATSAPP
     </button>
@@ -190,276 +190,6 @@
     </div>
   </div>
 
-  <script>
-    function autoFillProfile() {
-      var profileData = JSON.parse(localStorage.getItem('savage_profile'));
-      
-      if (profileData) {
-        if (profileData.name) document.getElementById('cust-name').value = profileData.name;
-        if (profileData.phone) document.getElementById('cust-phone').value = profileData.phone;
-        
-        if (profileData.province) {
-          document.getElementById('cust-province').value = profileData.province;
-          updateDistricts(); 
-          
-          if (profileData.district) {
-            document.getElementById('cust-district').value = profileData.district;
-          }
-        }
-      }
-    }
-
-    var globalCart = [];
-
-    var laoDistricts = {
-      "ນະຄອນຫຼວງວຽງຈັນ": ["ຈັນທະບູລີ", "ສີໂຄດຕະບອງ", "ໄຊເສດຖາ", "ສີສັດຕະນາກ", "ນາຊາຍທອງ", "ໄຊທານີ", "ຫາດຊາຍຟອງ", "ສັງທອງ", "ປາກງື່ມ"],
-      "ຜົ້ງສາລີ": ["ຜົ້ງສາລີ", "ໃໝ່", "ຂວາ", "ສຳພັນ", "ບຸນເໜືອ", "ຍອດອູ", "ບຸນໃຕ້"],
-      "ຫຼວງນ້ຳທາ": ["ຫຼວງນ້ຳທາ", "ສິງ", "ລອງ", "ວຽງພູຄາ", "ນາແລ"],
-      "ອຸດົມໄຊ": ["ໄຊ", "ຫຼາ", "ນາໝໍ້", "ງາ", "ແບ່ງ", "ຮຸນ", "ປາກແບ່ງ"],
-      "ບໍ່ແກ້ว": ["ຫ້ວຍຊາຍ", "ຕົ້ນເຜິ້ງ", "ເມິງ", "ຜາອຸດົມ", "ປາກທາ"],
-      "ຫຼວງພະບາງ": ["ຫຼວງພະບາງ", "ຊຽງເງິນ", "ນານ", "ປາກອູ", "ນ້ຳບາກ", "ງອຍ", "ປາກແຊງ", "ໂພນໄຊ", "ຈອມເພັດ", "ວຽງຄຳ", "ພູຄູນ"],
-      "ຫົວພັນ": ["ຊຳເໜືອ", "ຊຽງຄໍ້", "ຮ້ຽມ", "ວຽງໄຊ", "ຫົວເມືອງ", "ຊຳໃຕ້", "ສົບເບົາ", "ແອດ", "ກັວນ", "ຊ່ອນ"],
-      "ໄຊຍະບູລີ": ["ໄຊຍະບູລີ", "ຄອບ", "ຊຽງຮ່ອນ", "ເງິນ", "ຫົງສາ", "ໄຊສະຖານ", "ຄຳ", "ປາກລາຍ", "ແກ່ນທ້າວ", "ບໍ່ແຕນ", "ທົ່ງมีໄຊ"],
-      "ຊຽງຂວາງ": ["ແປກ", "ຄຳ", "ໜອງແຮດ", "ຄູນ", "ໝອກໃໝ່", "ພູກູດ", "ຜາໄຊ"],
-      "ວຽງຈັນ": ["ໂພນໂຮງ", "ທຸລະຄົມ", "ແກ້ວອຸດົມ", "ກາສີ", "ວັງວຽງ", "ເຟືອງ", "ຊະນະຄາມ", "ແມດ", "ວຽງຄຳ", "ຫີນເຫີບ", "ໝື່ນ"],
-      "ບໍລິຄຳໄຊ": ["ປາກຊັນ", "ທ່າພະບາດ", "ປາກກະດິງ", "ບໍລິຄັນ", "ຄຳເກີດ", "ວຽງທອງ", "ໄຊຈຳພອນ"],
-      "ຄຳມ່ວນ": ["ທ່າແຂກ", "ມະຫາໄຊ", "ໜອງບົກ", "ຫີນບູນ", "ຍົມມະລາດ", "ບົວລະພາ", "ນາກາຍ", "ເຊບັ້ງໄຟ", "ໄຊບົວທອງ", "ຄູນຄຳ"],
-      "ສະຫວັນນະເຂດ": ["ໄກສອນ ພົມວິຫານ", "ອຸທຸມພອນ", "ອາດສະພັງທອງ", "ພີນ", "ເຊໂປນ", "ນອງ", "ທ່າປາງທອງ", "ສອງຄອນ", "ຈຳພອນ", "ຊົນນະບູລີ", "ໄຊບູລີ", "ວີລະບຸລີ", "ອາດສະພອນ", "ໄຊພູທອງ", "ພະລານໄຊ"],
-      "ສາລະວັນ": ["ສາລະວັນ", "ຕະໂອ້ຍ", "ຕຸ້ມລານ", "ລະຄອນເພັງ", "ວາປີ", "ຄົງເຊໂດນ", "ສະໝ້ວຍ"],
-      "ເຊກອງ": ["ລະມາມ", "ກະລຶມ", "ດາກຈຶງ", "ທ່າແຕງ"],
-      "ຈຳປາສັກ": ["ປາກເຊ", "ຊະນະສົມບູນ", "ບາຈຽງຈະເລີນສຸກ", "ປາກຊ່ອງ", "ປະທຸມພອນ", "ໂພນທອງ", "ຈຳປາສັກ", "ສຸຂຸມາ", "ມູນລະປາໂມກ", "ໂຂງ"],
-      "ອັດຕະປື": ["ໄຊເສດຖา", "ສາມັກຄີໄຊ", "ສະໜາມໄຊ", "ຊານໄຊ", "ພູວົງ"],
-      "ໄຊສົມບູນ": ["ອະນຸວົງ", "ລ້ອງຊານ", "ລ້ອງແຈ້ງ", "ທ່າໂທມ", "ຮົ່ມ"]
-    };
-
-    function updateDistricts() {
-      var provSelect = document.getElementById('cust-province');
-      var distSelect = document.getElementById('cust-district');
-      var selectedProv = provSelect.value;
-      
-      distSelect.innerHTML = '<option value="" disabled selected>-- ເລືອກເມືອງ --</option>'; 
-      
-      if (selectedProv && laoDistricts[selectedProv]) {
-        var districts = laoDistricts[selectedProv];
-        for (var i = 0; i < districts.length; i++) {
-          distSelect.innerHTML += '<option value="' + districts[i] + '">' + districts[i] + '</option>';
-        }
-        distSelect.disabled = false; 
-      } else {
-        distSelect.disabled = true; 
-      }
-    }
-
-    function renderCart() {
-      globalCart = JSON.parse(localStorage.getItem('savage_cart')) || [];
-      var container = document.getElementById('cart-items-list');
-      var formSection = document.getElementById('customer-info-section');
-      var summaryBar = document.getElementById('summary-bar');
-      
-      if (globalCart.length === 0) {
-        container.innerHTML = `
-          <div class="empty-cart">
-            <span class="material-icons-outlined">shopping_cart</span>
-            <p>ບໍ່ມີສິນຄ້າໃນກະຕ່າໃນຂະນະນີ້</p>
-            <a href="<?= getScriptUrl() ?>?page=home" class="btn-go-home">GO SHOPPING</a>
-          </div>
-        `;
-        formSection.style.display = 'none';
-        summaryBar.style.display = 'none';
-        return;
-      }
-
-      formSection.style.display = 'block';
-      summaryBar.style.display = 'block';
-      container.innerHTML = '';
-
-      var grandTotal = 0;
-
-      for (var i = 0; i < globalCart.length; i++) {
-        var item = globalCart[i];
-        var itemSubtotal = item.price * item.qty;
-        grandTotal += itemSubtotal;
-
-        var itemHtml = `
-          <div class="cart-item">
-            <img src="${item.img}" class="item-img" onerror="this.src='https://via.placeholder.com/55?text=No+Image'">
-            <div class="item-details">
-              <div class="item-name">${item.name}</div>
-              <div class="item-price">${item.price.toLocaleString()} ₭</div>
-              
-              <div class="qty-controls">
-                <button class="qty-btn" onclick="updateQty('${item.id}', -1)"><span class="material-icons-outlined">remove</span></button>
-                <span class="qty-num">${item.qty}</span>
-                <button class="qty-btn" onclick="updateQty('${item.id}', 1)"><span class="material-icons-outlined">add</span></button>
-              </div>
-            </div>
-            
-            <button class="btn-delete" onclick="removeCartItem('${item.id}')">
-              <span class="material-icons-outlined">delete_outline</span>
-            </button>
-          </div>
-        `;
-        container.innerHTML += itemHtml;
-      }
-
-      document.getElementById('cart-grand-total').innerText = grandTotal.toLocaleString() + ' ₭';
-    }
-
-    function updateQty(id, delta) {
-      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
-      var item = cart.find(function(c) { return c.id === id; });
-      if (item) {
-        item.qty += delta;
-        if (item.qty < 1) item.qty = 1;
-        localStorage.setItem('savage_cart', JSON.stringify(cart));
-        renderCart();
-      }
-    }
-
-    function removeCartItem(id) {
-      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
-      var updatedCart = cart.filter(function(c) { return c.id !== id; });
-      localStorage.setItem('savage_cart', JSON.stringify(updatedCart));
-      renderCart();
-    }
-
-    function sendOrderViaWhatsApp() {
-      var name = document.getElementById('cust-name').value.trim();
-      var phone = document.getElementById('cust-phone').value.trim();
-      var shippingComp = document.getElementById('cust-shipping-comp').value;
-      var shippingBranch = document.getElementById('cust-shipping-branch').value.trim();
-      var province = document.getElementById('cust-province').value;
-      var districtElem = document.getElementById('cust-district');
-      var district = districtElem ? districtElem.value : "";
-      var paymentMethod = document.getElementById('cust-payment-method').value;
-
-      if (!name || !phone || !shippingComp || !shippingBranch || !district || !province) {
-        alert('ກະລຸນາກອກຂໍ້ມູນຜູ້ຊື້ ແລະ ເລືອກລາຍລະອຽດການຈັດສົ່ງໃຫ້ຄົບຖ້ວນ!');
-        return;
-      }
-
-      var checkoutBtn = document.getElementById('btn-submit-order') || document.querySelector('.summary-bar button') || document.querySelector('button[onclick="sendOrderViaWhatsApp()"]');
-      if (checkoutBtn) {
-        checkoutBtn.disabled = true;
-        checkoutBtn.innerHTML = '<span class="material-icons-outlined">sync</span> ກຳລັງບັນທຶກຂໍ້ມູນ...';
-      }
-
-      var grandTotal = 0;
-      var detailsArray = [];
-      for (var i = 0; i < globalCart.length; i++) { 
-        var item = globalCart[i];
-        detailsArray.push(item.qty + "x " + item.name);
-        grandTotal += (item.price * item.qty); 
-      }
-      var orderDetailsText = detailsArray.join(", ");
-
-      var orderData = {
-        cartItems: globalCart,
-        orderDetails: orderDetailsText,
-        totalPrice: grandTotal,
-        name: name,
-        phone: phone,
-        express: shippingComp,
-        address: shippingBranch,
-        provinces: province,
-        district: district,
-        paymentMethod: paymentMethod
-      };
-
-      submitOrderToServer(orderData, checkoutBtn);
-    }
-
-    function submitOrderToServer(orderData, checkoutBtn) {
-      google.script.run
-        .withSuccessHandler(function(response) {
-          if (response.success) {
-            var generatedId = response.orderId; 
-
-            var textMessage = "🏁 *ໃບສັ່ງຊື້ສິນຄ້າຈາກ SAVAGE SHOP* 🏁\n";
-            textMessage += "🆔 *Order ID:* `" + generatedId + "`\n";
-            textMessage += "--------------------------------------\n";
-            textMessage += "👤 *ຂໍ້ມູນຜູ້ສັ່ງຊື້ ແລະ ການຈັດສົ່ງ:*\n";
-            textMessage += "• ຊື່: " + orderData.name + "\n";
-            textMessage += "• ເບີໂທ: " + orderData.phone + "\n";
-            textMessage += "• ບໍລິສັດຂົນສົ່ງ: " + orderData.express + "\n";
-            textMessage += "• ສາຂາ: " + orderData.address + "\n";
-            textMessage += "• ເມືອງ: " + orderData.district + "\n";
-            textMessage += "• ແຂວງ: " + orderData.provinces + "\n";
-            textMessage += "• ວິທີການຈ່າຍ: *" + orderData.paymentMethod + "*\n";
-            textMessage += "--------------------------------------\n";
-            textMessage += "📦 *...ລາຍການສິນຄ້າ...*\n";
-
-            for (var i = 0; i < globalCart.length; i++) {
-              var item = globalCart[i];
-              var subtotal = item.price * item.qty;
-              textMessage += (i + 1) + ". " + item.name + "\n";
-              textMessage += "   ຈຳນວນ: " + item.qty + " x " + item.price.toLocaleString() + " ₭\n";
-              textMessage += "   ລວມ: " + subtotal.toLocaleString() + " ₭\n";
-            }
-            textMessage += "--------------------------------------\n";
-            textMessage += "💰 *ຍອດລວມທັງໝົດ (TOTAL):* *" + orderData.totalPrice.toLocaleString() + " ₭*\n";
-            textMessage += "--------------------------------------\n";
-            textMessage += "⚡ _ກະລຸນາລໍຖ້າແອດມິນກວດສອບສະຕັອກ ແລະ ແຈ້ງຍອດໂອນ ເພື່ອຢືນຢັນການສັ່ງຊື້_";
-
-            var orderHistory = JSON.parse(localStorage.getItem('savage_orders')) || [];
-            orderHistory.unshift({ 
-              orderId: generatedId, 
-              date: new Date().toLocaleString('lo-LA'), 
-              items: globalCart, 
-              total: orderData.totalPrice, 
-              status: 'ລໍຖ້າກວດສອບ' 
-            });
-            localStorage.setItem('savage_orders', JSON.stringify(orderHistory));
-
-            var whatsappUrl = "https://wa.me/8562077912526?text=" + encodeURIComponent(textMessage);
-            
-            document.getElementById('display-order-id').innerText = generatedId;
-            document.getElementById('success-modal').style.display = 'flex';
-            
-            document.getElementById('btn-go-wa').onclick = function() {
-              window.open(whatsappUrl, '_blank');
-            };
-
-            localStorage.removeItem('savage_cart');
-            renderCart();
-            if (typeof updateCartBadge === "function") updateCartBadge();
-
-            window.open(whatsappUrl, '_blank');
-            
-          } else {
-            alert('เกิดข้อผิดพลาด: ' + response.message);
-            if (checkoutBtn) { checkoutBtn.disabled = false; checkoutBtn.innerHTML = 'SEND ORDER TO WHATSAPP'; }
-          }
-        })
-        .withFailureHandler(function(err) {
-          alert('ระบบขัดข้องกรุณาลองใหม่: ' + err.toString());
-          if (checkoutBtn) { checkoutBtn.disabled = false; checkoutBtn.innerHTML = 'SEND ORDER TO WHATSAPP'; }
-        })
-        .saveOrderToSheet(orderData); 
-    }
-
-    function closeSuccessModal() {
-      document.getElementById('success-modal').style.display = 'none';
-      window.top.location.href = '<?= getScriptUrl() ?>?page=home';
-    }
-
-    renderCart();
-    autoFillProfile(); 
-
-    function updateCartBadge() {
-      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
-      var headerBadge = document.getElementById('cart-badge'); 
-      
-      if (cart.length > 0) {
-        var totalQty = 0;
-        for (var i = 0; i < cart.length; i++) { totalQty += cart[i].qty; }
-        if (headerBadge) { headerBadge.innerText = totalQty; headerBadge.style.display = 'block'; }
-      } else {
-        if (headerBadge) headerBadge.style.display = 'none';
-      }
-    }
-    
-    updateCartBadge();
-  </script>
+  <script type="module" src="cart_script.js"></script>
 </body>
 </html>

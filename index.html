@@ -33,7 +33,7 @@
     .store-banner p { font-size: 0.6rem; font-weight: 700; color: #ccc; margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase; }
 
     /* --- Model Tabs (ลดขนาดปุ่มแท็บ) --- */
-    .model-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; background: #fff; border-bottom: 1px solid #eee; }
+    .model-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; background: #fff; border-bottom: 1px solid #eee; min-height: 48px; align-items: center; }
     .tab-btn { padding: 5px 12px; border: 1px solid #ddd; background: #fff; color: #666; font-weight: 700; border-radius: 20px; cursor: pointer; font-size: 0.7rem; white-space: nowrap; transition: 0.2s; }
     .tab-btn.active { background: #111; color: #fff; border-color: #111; }
 
@@ -51,7 +51,7 @@
     .card-price { font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 900; color: #ff3d00; }
     .card-check { color: #00e676; font-size: 0.85rem; }
     
-    .empty-state { display: none; grid-column: span 2; text-align: center; padding: 30px; color: #999; font-weight: 700; font-size: 0.8rem; }
+    .empty-state { grid-column: span 2; text-align: center; padding: 30px; color: #999; font-weight: 700; font-size: 0.8rem; }
 
     /* --- Bottom Nav (เพรียวบาง ไม่บังจอ) --- */
     .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: white; display: flex; justify-content: space-between; padding: 0; border-top: 1px solid #eee; z-index: 99; }
@@ -64,44 +64,10 @@
 </head>
 <body>
 
-  <? 
-    var _groupsData = (typeof groupsData !== 'undefined' && groupsData.length > 0) ? groupsData : getSheetData('group');
-    var _partsData = (typeof partsData !== 'undefined' && partsData.length > 0) ? partsData : getSheetData('detail');
-    
-    var uniqueModels = [];
-    for(var m=0; m<_partsData.length; m++) {
-      var mStr = _partsData[m]['Moto Model'] || _partsData[m]['Model'] || '';
-      var mArr = mStr.toString().split(',');
-      for(var j=0; j<mArr.length; j++) {
-        var cleanM = mArr[j].trim();
-        if(cleanM && cleanM !== 'All MODELS' && uniqueModels.indexOf(cleanM) === -1) {
-          uniqueModels.push(cleanM);
-        }
-      }
-    }
-    uniqueModels.sort();
-
-    var uniqueGroups = [];
-    for(var g=0; g<_groupsData.length; g++) {
-      var gName = (_groupsData[g]['Group'] || '').trim();
-      if(gName && uniqueGroups.indexOf(gName) === -1) {
-        uniqueGroups.push(gName);
-      }
-    }
-    uniqueGroups.sort();
-
-    function getImg(url) {
-      if (!url) return 'https://via.placeholder.com/200?text=No+Image';
-      var id = ''; var match = url.match(/(?:id=|\/file\/d\/)([a-zA-Z0-9-_]+)/);
-      if (match && match[1]) id = match[1];
-      return id ? 'https://lh3.googleusercontent.com/d/' + id : url;
-    }
-  ?>
-
   <header class="header">
     <div style="width: 22px;"></div> 
     <div class="logo">SAVAGE SHOP</div>
-    <button class="icon-btn" style="position: relative;" onclick="window.top.location.href='<?= getScriptUrl() ?>?page=cart'">
+    <button class="icon-btn" style="position: relative;" onclick="window.location.href='cart.html'">
       <span class="material-icons-outlined">shopping_cart</span>
       <span id="cart-badge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ff3d00; color:white; border-radius:50%; font-size:9px; font-weight:bold; width: 16px; height: 16px; line-height: 16px; text-align: center;">0</span>
     </button>
@@ -115,9 +81,6 @@
     
     <select id="groupSelect" class="group-select" onchange="applyFilter()">
       <option value="ALL">ທຸກໝວດໝູ່</option>
-      <? for(var i=0; i<uniqueGroups.length; i++) { ?>
-        <option value="<?= uniqueGroups[i].toLowerCase() ?>"><?= uniqueGroups[i] ?></option>
-      <? } ?>
     </select>
   </div>
 
@@ -130,138 +93,28 @@
 
   <div class="model-tabs" id="modelTabs">
     <button class="tab-btn active" onclick="filterData('ALL', this)">ທຸກລຸ້ນລົດ</button>
-    <? for(var i=0; i<uniqueModels.length; i++) { ?>
-      <button class="tab-btn" onclick="filterData('<?= uniqueModels[i] ?>', this)"><?= uniqueModels[i].toUpperCase() ?></button>
-    <? } ?>
   </div>
 
   <div class="grid-container" id="groupGrid">
-    <? 
-    var hasItems = false;
-    for(var i=0; i<_groupsData.length; i++) {
-      var gName = _groupsData[i]['Group'] || 'ບໍ່ລະບຸ';
-      var gPrice = _groupsData[i]['Price'] || _groupsData[i]['ລາຄາ'] || '0';
-      var gImg = _groupsData[i]['Image_URL'] || _groupsData[i]['image Group'] || '';
-
-      var itemCount = 0;
-      var groupModels = [];
-      for(var k=0; k<_partsData.length; k++) {
-        var checkGroup = _partsData[k]['Group'] || '';
-        if (checkGroup === gName) {
-          itemCount++;
-          var rawPartModel = _partsData[k]['Moto Model'] || _partsData[k]['Model'] || '';
-          var pModels = rawPartModel.toString().split(',');
-          for(var m=0; m<pModels.length; m++) {
-            var trimmed = pModels[m].trim().toLowerCase();
-            if(trimmed && groupModels.indexOf(trimmed) === -1) groupModels.push(trimmed);
-          }
-        }
-      }
-      var modelAttr = groupModels.join('|');
-      
-      if (itemCount > 0) {
-        hasItems = true;
-    ?>
-      <div class="card group-item" data-name="<?= gName.toLowerCase() ?>" data-models="<?= modelAttr ?>" onclick="goToGroup('<?= encodeURIComponent(gName) ?>')">
-        <div class="badge-count"><?= itemCount ?> ລາຍການ</div>
-        <div class="img-box"><img src="<?= getImg(gImg) ?>" onerror="this.src='https://via.placeholder.com/200?text=No+Image'"></div>
-        <div class="card-info">
-          <div class="card-title"><?= gName ?></div>
-          <div class="card-price-row">
-            <div class="card-price"><?= Number(gPrice).toLocaleString() ?> ₭</div>
-            <span class="material-icons-outlined card-check">check_circle</span>
-          </div>
-        </div>
-      </div>
-    <? 
-      }
-    } 
-    if (!hasItems) { ?>
-      <div style="grid-column: span 2; text-align: center; padding: 40px; color: #999; font-size: 0.8rem;">ບໍ່ມີຂໍ້ມູນໝວດໝູ່ในຂະນະນີ້</div>
-    <? } ?>
-    
-    <div class="empty-state" id="emptyState">ບໍ່ພົບໝວດໝູ່ທີ່ຄົ້ນຫາ</div>
+    <!-- Grid elements dynamically generated -->
   </div>
 
   <nav class="bottom-nav">
-    <a href="javascript:void(0);" onclick="window.top.location.href='<?= getScriptUrl() ?>?page=home'" class="nav-link active">
+    <a href="index.html" class="nav-link active">
       <div class="nav-icon-box"><span class="material-icons-outlined">home</span></div><span>HOME</span>
     </a>
-    <a href="<?= getScriptUrl() ?>?page=orders" target="_top" class="nav-link">
+    <a href="orders.html" class="nav-link">
       <div class="nav-icon-box" style="position: relative; display: inline-block;">
         <span class="material-icons-outlined">receipt_long</span>
         <span id="nav-cart-badge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ff3d00; color:white; border-radius:50%; font-size:9px; font-weight:bold; min-width: 16px; height: 16px; line-height: 16px; text-align: center; padding: 0 4px; z-index: 10;">0</span>
       </div>
       <span>ORDERS</span>
     </a>
-    <a href="javascript:void(0);" onclick="window.top.location.href='<?= getScriptUrl() ?>?page=profile'" class="nav-link">
+    <a href="profile.html" class="nav-link">
       <div class="nav-icon-box"><span class="material-icons-outlined">person</span></div><span>PROFILE</span>
     </a>
   </nav>
 
-  <script>
-    var currentModel = 'ALL';
-
-    window.onload = function() {
-      updateCartBadge();
-    };
-
-    function filterData(model, btnElement) {
-       currentModel = model;
-       var btns = document.querySelectorAll('.tab-btn');
-       btns.forEach(b => b.classList.remove('active'));
-       btnElement.classList.add('active');
-       applyFilter();
-    }
-    
-    function applyFilter() {
-       var searchTxt = document.getElementById('searchInput').value.toLowerCase().trim();
-       var selectedGroup = document.getElementById('groupSelect').value;
-       var cards = document.querySelectorAll('.group-item');
-       var visibleCount = 0;
-       
-       cards.forEach(card => {
-          var cName = card.getAttribute('data-name');
-          var cModels = card.getAttribute('data-models');
-          
-          var matchSearch = cName.includes(searchTxt);
-          var matchModel = (currentModel === 'ALL') || cModels.includes(currentModel.toLowerCase());
-          var matchDropdown = (selectedGroup === 'ALL') || (cName === selectedGroup);
-          
-          if(matchSearch && matchModel && matchDropdown) {
-             card.style.display = 'flex'; 
-             visibleCount++;
-          } else {
-             card.style.display = 'none';
-          }
-       });
-       
-       document.getElementById('emptyState').style.display = (visibleCount === 0) ? 'block' : 'none';
-    }
-
-    function goToGroup(encodedGroup) {
-      var url = '<?= getScriptUrl() ?>?page=detail&group=' + encodedGroup;
-      if (currentModel !== 'ALL') {
-        url += '&model=' + encodeURIComponent(currentModel);
-      }
-      window.top.location.href = url;
-    }
-
-    function updateCartBadge() {
-      var cart = JSON.parse(localStorage.getItem('savage_cart')) || [];
-      var headerBadge = document.getElementById('cart-badge');
-      var navBadge = document.getElementById('nav-cart-badge');
-      
-      if (cart.length > 0) {
-        var totalQty = 0;
-        for (var i = 0; i < cart.length; i++) { totalQty += cart[i].qty; }
-        if (headerBadge) { headerBadge.innerText = totalQty; headerBadge.style.display = 'block'; }
-        if (navBadge) { navBadge.innerText = totalQty; navBadge.style.display = 'block'; }
-      } else {
-        if (headerBadge) headerBadge.style.display = 'none';
-        if (navBadge) navBadge.style.display = 'none';
-      }
-    }
-  </script>
+  <script type="module" src="index_script.js"></script>
 </body>
 </html>
