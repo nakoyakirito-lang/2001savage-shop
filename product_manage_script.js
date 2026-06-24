@@ -26,7 +26,7 @@ window.checkLogin = async function() {
 }
 
 window.logoutSavage = async function() { await signOut(auth); }
-window.onload = function() { window.checkAuth(); };
+window.checkAuth();
 
 window.loadDropdownData = function() {
   get(ref(db, 'products')).then(snapshot => {

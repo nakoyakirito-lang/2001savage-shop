@@ -329,4 +329,4 @@ window.saveExpense = async function() {
   }
 }
 
-window.onload = window.checkAuth;
+window.checkAuth();

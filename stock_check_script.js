@@ -127,4 +127,4 @@ window.applyFilter = function() {
   }
 }
 
-window.onload = window.checkAuth;
+window.checkAuth();

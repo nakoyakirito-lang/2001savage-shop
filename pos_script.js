@@ -27,7 +27,7 @@ window.checkLogin = async function() {
 };
 
 window.logoutSavage = async function() { await signOut(auth); };
-window.onload = function() { window.checkAuth(); };
+window.checkAuth();
 
 // --- 🛒 ລະບົບ POS (ດຶງສິນຄ້າ & ຄິດເງິນ) ---
 window.globalPosProducts = [];

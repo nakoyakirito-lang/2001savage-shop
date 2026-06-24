@@ -192,4 +192,4 @@ window.renderInventory = function() {
   document.getElementById('dead-stock-list').innerHTML = deadHtml;
 }
 
-window.onload = window.checkAuth;
+window.checkAuth();

@@ -20,7 +20,7 @@ window.checkLogin = async function() {
   } 
 }
 window.logoutSavage = async function() { await signOut(auth); }
-window.onload = function() { window.checkAuth(); window.loadPendingBadge(); };
+window.checkAuth(); window.loadPendingBadge();
 
 window.switchTab = function(tab) {
   if(tab === 'history') { document.getElementById('tab-po-form').style.display = 'none'; document.getElementById('tab-po-history').style.display = 'flex'; window.loadPoHistory(); } 
